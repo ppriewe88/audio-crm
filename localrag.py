@@ -35,7 +35,9 @@ def get_relevant_context(rewritten_input, vault_embeddings, vault_content, top_k
 
 def rewrite_query(user_input_json, conversation_history, ollama_model):
     user_input = json.loads(user_input_json)["Query"]
+    print("user input in rewrite_query function: \n", user_input)
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-2:]])
+    print("context in rewrite_query function: \n", context)
     prompt = f"""Rewrite the following query by incorporating relevant context from the conversation history.
     The rewritten query should:
     
@@ -53,6 +55,9 @@ def rewrite_query(user_input_json, conversation_history, ollama_model):
     
     Rewritten query: 
     """
+    print("in rewriting function: Asking ollama to rewrite query! The prompt:")
+    print(prompt)
+
     response = client.chat.completions.create(
         model=ollama_model,
         messages=[{"role": "system", "content": prompt}],
@@ -60,7 +65,8 @@ def rewrite_query(user_input_json, conversation_history, ollama_model):
         n=1,
         temperature=0.1,
     )
-    rewritten_query = response.choices[0].message.content.strip()
+    rewritten_query = response.choices[0].message.content#.strip()
+    print("rewriting function: REWRITTEN QUERY:\n", rewritten_query)
     return json.dumps({"Rewritten Query": rewritten_query})
    
 def ollama_chat(user_input, system_message, vault_embeddings, vault_content, ollama_model, conversation_history):
@@ -91,21 +97,35 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
         user_input_with_context = user_input + "\n\nRelevant Context:\n" + context_str
     
     conversation_history[-1]["content"] = user_input_with_context
-    
+    print("conversation history:\n", conversation_history)
+
     messages = [
         {"role": "system", "content": system_message},
         *conversation_history
     ]
-    
+    print("message:\n", messages)
+    print("message ready\nentering chat....")
     response = client.chat.completions.create(
         model=ollama_model,
         messages=messages,
-        max_tokens=2000,
+        max_tokens=200,
+        temperature=0.1,
+        # stream=True
     )
-    
-    conversation_history.append({"role": "assistant", "content": response.choices[0].message.content})
+    print("message retrieved")
+    # full_response = ""
+    # for chunk in response:
+    #     content_part = chunk.choices[0].delta.content or ""
+    #     print(content_part, end="", flush=True)  # besser flush=True fürs Live-Feeling
+    #     full_response += content_part
+    # conversation_history.append({"role": "assistant", "content": full_response})
+    # return full_response
+    print("\nsaving history....")
+    conversation_history.append({"role": "assistant", "content": response.choices[0].message.content
+    }) #response.choices[0].message.content
     
     return response.choices[0].message.content
+
 
 # Parse command-line arguments
 print(NEON_GREEN + "Parsing command-line arguments..." + RESET_COLOR)
@@ -143,7 +163,9 @@ print(vault_embeddings_tensor)
 # Conversation loop
 print("Starting conversation loop...")
 conversation_history = []
-system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
+system_message =  "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Do only rely on information in the given text. Do not add any further information." \
+"If no information (with regard to the question) is given in the text, tell that there is not enough information in the given context." 
+#"You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
 
 while True:
     user_input = input(YELLOW + "Ask a query about your documents (or type 'quit' to exit): " + RESET_COLOR)
