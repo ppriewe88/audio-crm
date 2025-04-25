@@ -1,6 +1,4 @@
 import pyodbc
-import pandas as pd
-
 
 ' ###### establishing connection #################'
 
@@ -21,16 +19,28 @@ def establish_database_connection():
     return connection
 
 ' ################### simple select queries ################'
-def make_query(input_query):
-    connection = establish_database_connection
-    cursor = connection.cursor()
+def make_query(input_query, connection):
+    try:
+        cursor = connection.cursor()
 
-    query1 = input_query
-    cursor.execute(query1)
+        query1 = input_query
+        cursor.execute(query1)
 
-    rows = cursor.fetchall()
-    return rows
+        rows = cursor.fetchall()
+        return rows
+    except Exception as e:
+        print(f"Fehler bei der SQL-Abfrage:\n{e}")
+        return None
    
+' ####### quick test ################### '   
+# connection = establish_database_connection()
+# query = "SELECT TOP 5 * FROM products LIMIT 1"
+# results = make_query(query, connection)
+# if results:
+#     for result in results:
+#         print(result)
+#     print("\n\n\n", len(results))
+
 
 # ' ################ reading sql query results to pandas ##########'
 # # reuse connection

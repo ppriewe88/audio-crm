@@ -4,7 +4,7 @@ import os
 from openai import OpenAI
 import argparse
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
-from database_access.database_helpers import establish_database_connection, make_query
+from database_access.data_retrieval import establish_database_connection, make_query
 
 ' ######################################## systems preparation functions #######################'
 def parse_cli_input():
@@ -46,8 +46,8 @@ def generate_vault_embeddings_tensor(vault_embeddings):
     # Convert to tensor and print embeddings
     print("Converting embeddings to tensor...")
     vault_embeddings_tensor = torch.tensor(vault_embeddings) 
-    print("Embeddings for each line in the vault:")
-    print(vault_embeddings_tensor)
+    # print("Embeddings for each line in the vault:")
+    # print(vault_embeddings_tensor)
     return vault_embeddings_tensor
 
 ' ##################################################### ollama functions #######################'
@@ -70,7 +70,7 @@ def get_relevant_context(user_input, vault_embeddings, vault_content, top_k=3):
 # Function to call chat with retrieved context of user query
 def ollama_chat_no_memory(user_input, system_message, vault_embeddings_tensor, vault_content, ollama_model):
     # Get relevant context from the vault
-    relevant_context = get_relevant_context(user_input, vault_embeddings_tensor, vault_content, top_k=3)
+    relevant_context = get_relevant_context(user_input, vault_embeddings_tensor, vault_content, top_k=2)
     if relevant_context:
         # Convert list to a single string with newlines between items
         context_str = "\n".join(relevant_context)
@@ -122,6 +122,7 @@ system_message =  find_sql_query
 vault_content = load_vault_content()
 vault_embeddings = generate_embeddings_for_vault_content(vault_content)
 vault_embeddings_tensor = generate_vault_embeddings_tensor(vault_embeddings)
+connection = establish_database_connection()
 
 # Conversation loop
 print("Starting querying loop...")
@@ -129,12 +130,20 @@ print("Starting querying loop...")
 while True:
     user_input = input("\n" + YELLOW + "Ask a query about your documents (or type 'quit' to exit): " + RESET_COLOR)
     if user_input.lower() == 'quit':
+        connection.close()
+        print("CONNECTION CLOSED!")
         break
-
+    
+    # get response from LLM
     response = ollama_chat_no_memory(
                         user_input = user_input, 
                         system_message=system_message, 
                         vault_embeddings_tensor=vault_embeddings_tensor, 
                         vault_content=vault_content, 
                         ollama_model = args.model)
+    
+    # extract sql query and send to database
+    response_query = response[len("[Query:]"):]
+    result = make_query(response_query, connection)
+    print(result)
 
