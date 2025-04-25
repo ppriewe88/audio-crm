@@ -44,7 +44,7 @@ def generate_embeddings_for_vault_content(vault_content):
 
 def generate_vault_embeddings_tensor(vault_embeddings):
     # Convert to tensor and print embeddings
-    print("Converting embeddings to tensor...")
+    print(NEON_GREEN + "Converting embeddings to tensor..." + RESET_COLOR)
     vault_embeddings_tensor = torch.tensor(vault_embeddings) 
     # print("Embeddings for each line in the vault:")
     # print(vault_embeddings_tensor)
@@ -65,6 +65,17 @@ def get_relevant_context(user_input, vault_embeddings, vault_content, top_k=3):
     top_indices = torch.topk(cos_scores, k=top_k)[1].tolist()
     # Get the corresponding context from the vault
     relevant_context = [vault_content[idx].strip() for idx in top_indices]
+    # print found tables
+    if relevant_context:
+        print("\nPulled context (tables):")
+        for line in relevant_context:
+            start = len("CREATE TABLE [dbo].") + 1
+            end = line.find("]", start)
+            table_name = line[start:end]
+            print("table name:", CYAN + table_name + RESET_COLOR)
+    else:
+        print(CYAN + "No relevant context found." + RESET_COLOR)
+    
     return relevant_context
 
 # Function to call chat with retrieved context of user query
