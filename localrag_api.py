@@ -33,7 +33,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     """
     ' ################################## Getting relevant context #####'
     # Get relevant context from vault
-    relevant_context = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=2)
+    relevant_context = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=3)
     if relevant_context:
         # Convert list to a single string with newlines between items
         context_str = "\n".join(relevant_context)
@@ -47,8 +47,8 @@ async def get_context_and_send_request(question: str = Form(...)):
     ' ####################### sending request to cloud-model / mockup #####'
     # send request to Cloud-LLM (e.g. Azure OpenAI)
     
-    cloud_usage = False
-    if cloud_usage:
+    usage = "openAI" # "cloud" # "openAI"
+    if usage == "cloud":
         print("sending request to cloud")
         # api_url_cloud = "https://your-cloud-llm-endpoint.openai.azure.com/openai/deployments/deployment-name/chat/completions?api-version=2024-02-15-preview"
         # llm_response = requests.post(
@@ -69,7 +69,7 @@ async def get_context_and_send_request(question: str = Form(...)):
         #         "presence_penalty": 0
         #     }
         # )
-    else:
+    elif usage == "local":
         print("running local test")
         api_url_local = "http://localhost:5000/chat"
         llm_response = requests.post(
@@ -79,9 +79,36 @@ async def get_context_and_send_request(question: str = Form(...)):
                     {"role": "user", "content": user_input_with_context}
                 ]}
         )
+        result = llm_response.json()
 
-    result = llm_response.json()
+    elif usage == "openAI":
+        print("sending request to OpenAI API")
 
+        api_url_openai = "https://api.openai.com/v1/chat/completions"
+        openai_api_key = "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"  # CAREFUL: DEACTIVATE if not needed or stolen!
+
+        headers = {
+            "Authorization": f"Bearer {openai_api_key}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": "gpt-3.5-turbo",  # oder "gpt-3.5-turbo" je nach Bedarf
+            "messages": [
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_input_with_context}
+            ],
+            "temperature": 0.1,
+            "max_tokens": 100
+        }
+        
+        llm_response = requests.post(api_url_openai, headers=headers, json=data)
+        # Optional: Fehlerbehandlung
+        if llm_response.status_code != 200:
+            raise Exception(f"OpenAI API Error: {llm_response.status_code} - {llm_response.text}")
+
+        result = llm_response.json()['choices'][0]['message']['content']
+        print(result)
     return {"user_input_with_context": user_input_with_context, "llm_response": result}
 
 
