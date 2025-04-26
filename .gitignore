@@ -1,10 +1,27 @@
 
+######################### Ignorings for backend #########################
 venv/
-
 
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
+######################### Ignorings for frontend #########################
 frontend/node_modules/
+/.pnp
+.pnp.js
+# testing
+/coverage
+# production
+/build
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+- debug etc.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
