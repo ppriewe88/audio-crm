@@ -140,22 +140,5 @@ async def get_context_and_send_request(question: str = Form(...)):
 
     return {"user question": question, "RAG-retrieval: relevant tables": relevant_tables, "llm_response": llm_response, "query_results": query_results}
 
-
-# @app.post("/get_context_and_ask_local_ollama")
-# async def get_context_and_ask_local_ollama(question: str = Form(...)):
-
-#     # get response from LLM
-#     response = localrag.ollama_chat_no_memory(
-#                         client = client,
-#                         user_input = question, 
-#                         system_message=system_message, 
-#                         vault_embeddings_tensor=vault_embeddings_tensor, 
-#                         vault_content=vault_content, 
-#                         ollama_model = args.model)
-    
-#     return response
-
-
-
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
