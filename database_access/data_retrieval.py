@@ -21,15 +21,18 @@ def establish_database_connection():
 ' ################### simple select queries ################'
 def make_query(input_query, connection):
     try:
+        # set cursor and execute query
         cursor = connection.cursor()
-
-        query1 = input_query
-        cursor.execute(query1)
-
+        cursor.execute(input_query)
+        # extract column names of retrieved results
+        column_names = [column[0] for column in cursor.description]
+        # extract all rows of retrieved results
         rows = cursor.fetchall()
-        return rows
+        # convert rows to list of dictionaries
+        results = [dict(zip(column_names, row)) for row in rows]
+        return results
     except Exception as e:
-        print(f"Fehler bei der SQL-Abfrage:\n{e}")
+        print(f"Error during execution of sql-query:\n{e}")
         return None
    
 ' ####### quick test ################### '   

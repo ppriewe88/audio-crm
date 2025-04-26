@@ -67,21 +67,28 @@ def get_relevant_context(user_input, vault_embeddings, vault_content, top_k=3):
     relevant_context = [vault_content[idx].strip() for idx in top_indices]
     # print found tables
     if relevant_context:
-        print("\nPulled context (tables):")
-        for line in relevant_context:
-            start = len("CREATE TABLE [dbo].") + 1
-            end = line.find("]", start)
-            table_name = line[start:end]
-            print("table name:", CYAN + table_name + RESET_COLOR)
+        relevant_tables = tables_in_relevant_context(relevant_context)
     else:
         print(CYAN + "No relevant context found." + RESET_COLOR)
     
-    return relevant_context
+    return {"relevant_context":relevant_context, "relevant_tables":relevant_tables}
+
+def tables_in_relevant_context(relevant_context):
+    # Extract table names from the relevant context
+    table_names = []
+    print("\nPulled context (tables):")
+    for line in relevant_context:
+        start = len("CREATE TABLE [dbo].") + 1
+        end = line.find("]", start)
+        table_name = line[start:end]
+        table_names.append(table_name)
+        print("table name:", CYAN + table_name + RESET_COLOR)
+    return table_names
 
 # Function to call chat with retrieved context of user query
 def ollama_chat_no_memory(client, user_input, system_message, vault_embeddings_tensor, vault_content, ollama_model):
     # Get relevant context from the vault
-    relevant_context = get_relevant_context(user_input, vault_embeddings_tensor, vault_content, top_k=2)
+    relevant_context = get_relevant_context(user_input, vault_embeddings_tensor, vault_content, top_k=2)["relevant_context"]
     if relevant_context:
         # Convert list to a single string with newlines between items
         context_str = "\n".join(relevant_context)

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Form
 import uvicorn
 import localrag_patrick as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
-from database_access.data_retrieval import establish_database_connection, make_query
+import database_access.data_retrieval as data_retrieval
 import requests
 
 app = FastAPI()
@@ -24,31 +24,42 @@ async def startup_event():
     vault_content = localrag.load_vault_content()
     vault_embeddings = localrag.generate_embeddings_for_vault_content(vault_content)
     vault_embeddings_tensor = localrag.generate_vault_embeddings_tensor(vault_embeddings)
-    # connection = localrag.establish_database_connection()
 
 @app.post("/get_context_and_send_request")
 async def get_context_and_send_request(question: str = Form(...)):
     """
-    Get relevant context from the vault based on the user's question.
+    - Get relevant context from the vault based on the user's question.
+
+    - Then send user's question and the relevant context to the LLM (either local or cloud-based or official API of OpenAI).
+    By system message, the LLM is instructed to answer in a specific way (i.e.: generate SQL clauses for given database context!).
+
+    - Send the SQL clause to the database and get the result
+
+    - Return: LLM-response (SQL-clause) AND retrieved data.
+
     """
-    ' ################################## Getting relevant context #####'
+    ' ################################## Getting relevant context ###################'
     # Get relevant context from vault
-    relevant_context = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=3)
+    relevant_context_and_tables = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=3)
+    relevant_context = relevant_context_and_tables["relevant_context"]  # Extract the relevant context
+    relevant_tables = relevant_context_and_tables["relevant_tables"]  # Extract the relevant table names
     if relevant_context:
         # Convert list to a single string with newlines between items
         context_str = "\n".join(relevant_context)
     else:
         print("No relevant context found.")
-    # Prepare the user's input by concatenating it with the relevant context
+    # Prepare the user's input by concatenating it with retrieved relevant context
     user_input_with_context = question
     if relevant_context:
         user_input_with_context = context_str + "\n\n" + question
 
-    ' ####################### sending request to cloud-model / mockup #####'
+    ' ############### sending request to cloud-model / local model / openAI-API #####'
     # send request to Cloud-LLM (e.g. Azure OpenAI)
     
     usage = "openAI" # "cloud" # "openAI"
+    llm_call_successfull = True
     if usage == "cloud":
+        # TODO: implement cloud model request
         print("sending request to cloud")
         # api_url_cloud = "https://your-cloud-llm-endpoint.openai.azure.com/openai/deployments/deployment-name/chat/completions?api-version=2024-02-15-preview"
         # llm_response = requests.post(
@@ -72,6 +83,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     elif usage == "local":
         print("running local test")
         api_url_local = "http://localhost:5000/chat"
+        # send request to local LLM under different port (for testing and comparison of runtime)
         llm_response = requests.post(
             api_url_local,
             json={"messages": [
@@ -79,12 +91,13 @@ async def get_context_and_send_request(question: str = Form(...)):
                     {"role": "user", "content": user_input_with_context}
                 ]}
         )
-        result = llm_response.json()
-
+        llm_response = llm_response.json()
+        print(CYAN + llm_response + RESET_COLOR)
     elif usage == "openAI":
         print("sending request to OpenAI API")
-
         api_url_openai = "https://api.openai.com/v1/chat/completions"
+        # sending request to official API of OpenAI
+        # configuring message first
         openai_api_key = "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"  # CAREFUL: DEACTIVATE if not needed or stolen!
 
         headers = {
@@ -101,15 +114,31 @@ async def get_context_and_send_request(question: str = Form(...)):
             "temperature": 0.1,
             "max_tokens": 100
         }
-        
+        # now sending request
         llm_response = requests.post(api_url_openai, headers=headers, json=data)
-        # Optional: Fehlerbehandlung
+        # erorr handling
         if llm_response.status_code != 200:
             raise Exception(f"OpenAI API Error: {llm_response.status_code} - {llm_response.text}")
 
-        result = llm_response.json()['choices'][0]['message']['content']
-        print(result)
-    return {"user_input_with_context": user_input_with_context, "llm_response": result}
+        llm_response = llm_response.json()['choices'][0]['message']['content']
+        print(CYAN + llm_response + RESET_COLOR)
+    else:
+        llm_response=("Invalid usage option. Choose 'cloud', 'local', or 'openAI'.")
+        llm_call_successfull = False
+
+    ' ############### Send SQL clause to database and get result ###############'
+    if llm_call_successfull:
+        # Send the SQL clause to the database and get the result
+        connection = data_retrieval.establish_database_connection()
+        # extract sql query and send to database
+        print(type(llm_response))
+        response_query = llm_response[len("[Query:]"):]
+        print(CYAN + response_query + RESET_COLOR)
+        query_results = data_retrieval.make_query(response_query, connection)
+    else:
+        query_results = ""
+
+    return {"user question": question, "RAG-retrieval: relevant tables": relevant_tables, "llm_response": llm_response, "query_results": query_results}
 
 
 # @app.post("/get_context_and_ask_local_ollama")
