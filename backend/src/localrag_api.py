@@ -94,7 +94,7 @@ async def get_context_and_send_request(question: str = Form(...)):
         llm_response = llm_response.json()
         print(CYAN + llm_response + RESET_COLOR)
     elif usage == "openAI":
-        print("sending request to OpenAI API")
+        print("\nsending request to OpenAI API")
         api_url_openai = "https://api.openai.com/v1/chat/completions"
         # sending request to official API of OpenAI
         # configuring message first
@@ -121,7 +121,7 @@ async def get_context_and_send_request(question: str = Form(...)):
             raise Exception(f"OpenAI API Error: {llm_response.status_code} - {llm_response.text}")
 
         llm_response = llm_response.json()['choices'][0]['message']['content']
-        print(CYAN + llm_response + RESET_COLOR)
+        print("Received query build by LLM:", CYAN + llm_response + RESET_COLOR)
     else:
         llm_response=("Invalid usage option. Choose 'cloud', 'local', or 'openAI'.")
         llm_call_successfull = False
@@ -129,14 +129,17 @@ async def get_context_and_send_request(question: str = Form(...)):
     ' ############### Send SQL clause to database and get result ###############'
     if llm_call_successfull:
         # Send the SQL clause to the database and get the result
+        print("\nconnecting to database")
         connection = data_retrieval.establish_database_connection()
         # extract sql query and send to database
-        print(type(llm_response))
         response_query = llm_response[len("[Query:]"):]
-        print(CYAN + response_query + RESET_COLOR)
+        print("send query to database...")
         query_results = data_retrieval.make_query(response_query, connection)
+        print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+        connection.close()
+        print("Connection to database closed!\n")
     else:
-        query_results = ""
+        query_results = "No results retrieved"
 
     return {"user question": question, "RAG-retrieval: relevant tables": relevant_tables, "llm_response": llm_response, "query_results": query_results}
 
