@@ -152,7 +152,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     else:
         query_results = "No results retrieved"
 
-    return {"user question": question, "RAG-retrieval (relevant tables)": relevant_tables, "llm_response": llm_response, "query_results": query_results}
+    return {"user question": question, "RAG-retrieval (relevant tables)": relevant_tables, "llm_response": response_query, "query_results": query_results}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

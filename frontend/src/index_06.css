@@ -22,12 +22,12 @@ h1 {
   text-align: center;
   background-color: #f4a226;
   font-family: "Monoton";
-  font-size: 8rem;
+  font-size: 6rem;
   text-transform: uppercase;
   font-weight: 400;
   word-spacing: 30px;
   letter-spacing: -5px;
-  padding: 2.4rem 0;
+  padding: 1.2rem 0;
 }
 
 h3 {
@@ -55,7 +55,7 @@ h3 {
 /* ########## classes for question container  */
 .question-container {
   width: 30%;
-  height: 500px;
+  height: 600px;
   background-color: #e5771f;
   padding: 2.8rem 0;
   display: flex;
@@ -66,7 +66,7 @@ h3 {
 }
 
 .question-box {
-  height: 320px;
+  height: 100%;
   width: 80%;
   background-color: #f7f7f7;
   color: #5a3e2b;
@@ -101,7 +101,7 @@ button:hover {
 /* ########## classes for response container  */
 .response-container {
   width: 70%;
-  height: 500px;
+  height: 600px;
   background-color: #e5771f;
   padding: 2.8rem 0;
   display: flex;
@@ -112,7 +112,7 @@ button:hover {
 }
 
 .data-box {
-  width: 80%;
+  width: 90%;
   height: 200px;
   background-color: #f7f7f7;
   color: #5a3e2b;
@@ -125,7 +125,7 @@ button:hover {
 }
 
 .control-item {
-  width: 80%;
+  width: 90%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -133,17 +133,16 @@ button:hover {
 }
 .control-caption {
   width: 20%;
-  font-size: 2.4rem;
+  font-size: 1.8rem;
   font-weight: 700;
 }
 
 .control-box {
   width: 80%;
-  height: 80px;
   background-color: #f7f7f7;
   color: #5a3e2b;
   font-family: inherit;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   padding: 1.2rem;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -151,3 +150,41 @@ button:hover {
 }
 
 /* ###################################   other classes  */
+.data-table-wrapper {
+  width: 90%;
+  height: 240px;
+  padding: 0.2rem;
+}
+
+.data-table-scroll {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto; /* vertikales Scrollen */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.data-table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  background-color: #e8eaf3;
+}
+
+.data-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  font-size: 1.8rem;
+}
+
+.data-table th {
+  background-color: #a7a7ea;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 1.8rem;
+  text-align: left;
+}

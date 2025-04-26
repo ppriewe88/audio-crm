@@ -107,8 +107,8 @@ function ChatbotResponse({ llmResponse }) {
   const controlPart = llmResponse
     ? {
         "user question": llmResponse["user question"],
-        "RAG-retrieval: relevant tables":
-          llmResponse["RAG-retrieval: relevant tables"],
+        "RAG-retrieval (relevant tables)":
+          llmResponse["RAG-retrieval (relevant tables)"],
         "SQL query": llmResponse.llm_response,
       }
     : {
@@ -128,21 +128,24 @@ function ChatbotResponse({ llmResponse }) {
   return (
     <div className="response-container">
       <h3>Retrieved data</h3>
-      <DataBox dataPart={dataPart} dataFragment={"query_results"} />
+      <DataBoxNew dataPart={dataPart} dataFragment={"query_results"} />
       <h3>Request validation</h3>
       <ControlBox
         controlPart={controlPart}
-        caption={"user question"}
+        caption="user question"
+        height="40px"
         controlFragment={"user question"}
       />
       <ControlBox
         controlPart={controlPart}
         caption={"RAG-retrieval: relevant tables"}
-        controlFragment={"RAG-retrieval: relevant tables"}
+        height="40px"
+        controlFragment={"RAG-retrieval (relevant tables)"}
       />
       <ControlBox
         controlPart={controlPart}
         caption={"SQL query"}
+        height="120px"
         controlFragment={"SQL query"}
       />
     </div>
@@ -150,22 +153,90 @@ function ChatbotResponse({ llmResponse }) {
 }
 
 function DataBox({ dataPart, dataFragment }) {
+  const data = dataPart[dataFragment];
+
+  let formattedValue = "";
+
+  if (Array.isArray(data)) {
+    formattedValue = data
+      .map((obj) => {
+        const entries = Object.entries(obj)
+          .map(([key, value]) => `${key}: ${value};`)
+          .join(" ");
+        return `{ ${entries} }`;
+      })
+      .join("\n"); // Jedes Dictionary eigene Zeile
+  } else if (typeof data === "object" && data !== null) {
+    const entries = Object.entries(data)
+      .map(([key, value]) => `${key}: ${value};`)
+      .join(" ");
+    formattedValue = `{ ${entries} }`;
+  } else {
+    formattedValue = data ? data.toString() : "";
+  }
+
   return (
     <textarea
       className="data-box"
-      value={JSON.stringify(dataPart[dataFragment], null, 2)}
+      value={formattedValue} // {JSON.stringify(dataPart[dataFragment], null, 2)}
       readOnly
     />
   );
 }
 
-function ControlBox({ controlPart, caption, controlFragment }) {
+function DataBoxNew({ dataPart, dataFragment }) {
+  const data = dataPart[dataFragment];
+
+  if (!Array.isArray(data) || data.length === 0) {
+    return <div className="data-table-wrapper">No Data available yet</div>;
+  }
+
+  // Alle Keys (Spaltenüberschriften) aus dem ersten Dict
+  const headers = Object.keys(data[0]);
+
+  return (
+    <div className="data-table-wrapper">
+      <div className="data-table-scroll">
+        <table className="data-table">
+          <thead>
+            <tr>
+              {headers.map((header) => (
+                <th key={header}>{header || "(empty)"}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, idx) => (
+              <tr key={idx}>
+                {headers.map((header) => (
+                  <td key={header}>{row[header]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+// ########################################################### ControlBox
+function ControlBox({ controlPart, caption, height, controlFragment }) {
+  const value = controlPart[controlFragment];
+  // check, if content is array (relevant for table names). If so, join with ", ", else use JSON.stringify
+  const formattedValue = Array.isArray(value)
+    ? value.join(",       ")
+    : typeof value === "string"
+    ? value.replace(/\\n/g, "\n").trim()
+    : JSON.stringify(value, null, 2);
+  // check, if content is of type string
+
   return (
     <div className="control-item">
       <span className="control-caption">{caption}</span>
       <textarea
         className="control-box"
-        value={JSON.stringify(controlPart[controlFragment], null, 2)}
+        style={{ height: height }}
+        value={formattedValue}
         readOnly
       />
     </div>
