@@ -4,13 +4,23 @@ import localrag_patrick as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 import database_access.data_retrieval as data_retrieval
 import requests
+from fastapi.middleware.cors import CORSMiddleware # middleware. requirement for frontend-suitable endpoint
 
+' ############################### setting up app for API #################"'
 app = FastAPI()
 
-embedding = None
-texts = None
+" ################# middleware block for frontend-suitable endpoint ###############"
+# CORS-Middleware. Required for communication with frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # allow requests from frontend
+    allow_credentials=True,
+    allow_methods=["*"],  # allow all HTTP-methods
+    allow_headers=["*"],  # allow all headers
+)
 
 
+' ################ initialization block for vault, embeddings, global variables #################'
 @app.on_event("startup")
 async def startup_event():
     # prepare ollama model for local testing
@@ -25,6 +35,7 @@ async def startup_event():
     vault_embeddings = localrag.generate_embeddings_for_vault_content(vault_content)
     vault_embeddings_tensor = localrag.generate_vault_embeddings_tensor(vault_embeddings)
 
+' ######################## endpoint to make requests for LLM and database #################'
 @app.post("/get_context_and_send_request")
 async def get_context_and_send_request(question: str = Form(...)):
     """
@@ -141,7 +152,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     else:
         query_results = "No results retrieved"
 
-    return {"user question": question, "RAG-retrieval: relevant tables": relevant_tables, "llm_response": llm_response, "query_results": query_results}
+    return {"user question": question, "RAG-retrieval (relevant tables)": relevant_tables, "llm_response": llm_response, "query_results": query_results}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
