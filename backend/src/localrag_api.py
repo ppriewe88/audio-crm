@@ -51,7 +51,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     """
     ' ################################## Getting relevant context ###################'
     # Get relevant context from vault
-    relevant_context_and_tables = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=3)
+    relevant_context_and_tables = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=5)
     relevant_context = relevant_context_and_tables["relevant_context"]  # Extract the relevant context
     relevant_tables = relevant_context_and_tables["relevant_tables"]  # Extract the relevant table names
     if relevant_context:
@@ -123,7 +123,7 @@ async def get_context_and_send_request(question: str = Form(...)):
                 {"role": "user", "content": user_input_with_context}
             ],
             "temperature": 0.1,
-            "max_tokens": 100
+            "max_tokens": 250
         }
         # now sending request
         llm_response = requests.post(api_url_openai, headers=headers, json=data)
