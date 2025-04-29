@@ -1,78 +1,92 @@
 import React, { useState } from "react";
 import { SpeechRecognitionButton } from "../speech_recognition/SpeechRecognition";
+import "./creation.css";
 
 export const CreationTasks = () => {
+  // state for task cards
   const [activeCard, setActiveCard] = useState(null);
-
+  // constants for card identification (speech!)
+  const CARD_IDENTIFIERS = {
+    links: "links",
+    mitte: "mitte",
+    rechts: "rechts",
+  };
   // handler for transcript received by speech recognition
   const handleTranscript = (transcript) => {
-    console.log("Erkannt:", transcript);
+    console.log("recognized:", transcript);
 
-    if (transcript.includes("links")) {
-      setActiveCard("links");
-    } else if (transcript.includes("mitte")) {
-      setActiveCard("mitte");
-    } else if (transcript.includes("rechts")) {
-      setActiveCard("rechts");
+    if (transcript.includes(CARD_IDENTIFIERS.links)) {
+      setActiveCard(CARD_IDENTIFIERS.links);
+    } else if (transcript.includes(CARD_IDENTIFIERS.mitte)) {
+      setActiveCard(CARD_IDENTIFIERS.mitte);
+    } else if (transcript.includes(CARD_IDENTIFIERS.rechts)) {
+      setActiveCard(CARD_IDENTIFIERS.rechts);
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "links" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Links
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "mitte" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Mitte
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "rechts" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Rechts
-        </div>
+    <div className="tasks-container">
+      <div className="cards-container">
+        <SpeechRecognitionButton
+          width="150px"
+          onTranscript={handleTranscript}
+          returnMode="textBlock"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.links}
+          cardTitle="Links"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.mitte}
+          cardTitle="Mitte"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.rechts}
+          cardTitle="Rechts"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.rechts}
+          cardTitle="Platzhalter"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.rechts}
+          cardTitle="Platzhalter"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.rechts}
+          cardTitle="Platzhalter"
+        />
+        <TaskCard
+          activeCard={activeCard}
+          cardIdent={CARD_IDENTIFIERS.rechts}
+          cardTitle="Platzhalter"
+        />
       </div>
-
-      <SpeechRecognitionButton
-        onTranscript={handleTranscript}
-        returnMode="textBlock"
-      />
     </div>
   );
+};
+
+const TaskCard = ({ activeCard, cardIdent, cardTitle }) => {
+  return (
+    <div
+      className="card"
+      style={{ backgroundColor: activeCard === cardIdent ? "red" : "#eee" }}
+    >
+      {cardTitle}
+    </div>
+  );
+};
+
+export const CreationWizard = () => {
+  return <div className="creation-control-container">Platzhalter</div>;
+};
+
+export const CreationResults = () => {
+  return <div className="creation-results-container">Platzhalter</div>;
 };

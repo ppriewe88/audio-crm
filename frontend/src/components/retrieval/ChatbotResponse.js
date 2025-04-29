@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import "./retrieval.css";
 
 // ####################################### ChatbotResponse
 // these components are responsible for displaying the response from the LLM

@@ -6,6 +6,7 @@ const SpeechRecognition =
 const recognitionButton = SpeechRecognition ? new SpeechRecognition() : null;
 
 export const SpeechRecognitionButton = ({
+  width = "80%",
   onTranscript,
   returnMode = "textBlock",
 }) => {
@@ -94,7 +95,7 @@ export const SpeechRecognitionButton = ({
   };
 
   return (
-    <div style={{ width: "80%" }}>
+    <div style={{ width: width }}>
       <button
         style={{ width: "100%" }}
         onClick={handleButtonClick}

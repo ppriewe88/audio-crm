@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { ChatbotQuestioning } from "./components/retrieval/ChatbotQuestioning";
 import { ChatbotResponse } from "./components/retrieval/ChatbotResponse";
-import { CreationTasks } from "./components/creation/CreationComponents_new";
+import {
+  CreationResults,
+  CreationTasks,
+  CreationWizard,
+} from "./components/creation/CreationComponents_new";
 
 // ########################################################### App
 export default function App() {
@@ -40,6 +44,10 @@ export default function App() {
                 Talk to the UI to create data!
               </p>
               <CreationTasks />
+              <div className="creation-container">
+                <CreationWizard />
+                <CreationResults />
+              </div>
             </>
           )}
         </div>
