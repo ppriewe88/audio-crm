@@ -56,9 +56,13 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
   };
 
   return (
-    <>
-      <form className="question-container" onSubmit={handleSubmit}>
-        <h3>Enter question for chatbot</h3>
+    <div className="question-container">
+      <h3>Enter question for chatbot</h3>
+      <SpeechRecognitionButton
+        onTranscript={handleTranscript}
+        returnMode="chunks" // "textBlock" or "chunks"
+      />
+      <form className="question-form" onSubmit={handleSubmit}>
         <textarea
           className="question-box"
           type="text"
@@ -71,11 +75,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
         />
         <button>Submit question</button>
       </form>
-      <SpeechRecognitionButton
-        onTranscript={handleTranscript}
-        returnMode="chunks" // "textBlock" or "chunks"
-      />
-    </>
+    </div>
   );
 };
 
@@ -83,6 +83,12 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
 // these components are responsible for displaying the response from the LLM
 // they will display the data and control parts of the response
 export const ChatbotResponse = ({ llmResponse }) => {
+  // state to control modal (ControlBoxModal)
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  // handler to manage modal visibility
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
   // if (!llmResponse) use empty data
   // else deconstruct Chatbot response (llmResponse);
   const controlPart = llmResponse
@@ -109,68 +115,31 @@ export const ChatbotResponse = ({ llmResponse }) => {
   return (
     <div className="response-container">
       <h3>Retrieved data</h3>
-      <DataBoxNew dataPart={dataPart} dataFragment={"query_results"} />
-      <h3>Request validation</h3>
-      <ControlBox
-        controlPart={controlPart}
-        caption="user question"
-        height="40px"
-        controlFragment={"user question"}
-      />
-      <ControlBox
-        controlPart={controlPart}
-        caption={"RAG-retrieval: relevant tables"}
-        height="40px"
-        controlFragment={"RAG-retrieval (relevant tables)"}
-      />
-      <ControlBox
-        controlPart={controlPart}
-        caption={"SQL query"}
-        height="120px"
-        controlFragment={"SQL query"}
-      />
+      <div className="data-container">
+        <DataBox dataPart={dataPart} dataFragment={"query_results"} />
+      </div>
+      <div className="control-container">
+        <button
+          onClick={toggleModal}
+          style={{ marginBottom: "10px", padding: "10px", fontSize: "14px" }}
+        >
+          {isModalVisible ? "Close Control Section" : "Show Control Section"}
+        </button>
+        <ControlBoxModal
+          controlPart={controlPart}
+          isVisible={isModalVisible}
+          onClose={toggleModal}
+        />
+      </div>
     </div>
   );
 };
 
-// ############################# DataBox
 export const DataBox = ({ dataPart, dataFragment }) => {
   const data = dataPart[dataFragment];
 
-  let formattedValue = "";
-
-  if (Array.isArray(data)) {
-    formattedValue = data
-      .map((obj) => {
-        const entries = Object.entries(obj)
-          .map(([key, value]) => `${key}: ${value};`)
-          .join(" ");
-        return `{ ${entries} }`;
-      })
-      .join("\n"); // Jedes Dictionary eigene Zeile
-  } else if (typeof data === "object" && data !== null) {
-    const entries = Object.entries(data)
-      .map(([key, value]) => `${key}: ${value};`)
-      .join(" ");
-    formattedValue = `{ ${entries} }`;
-  } else {
-    formattedValue = data ? data.toString() : "";
-  }
-
-  return (
-    <textarea
-      className="data-box"
-      value={formattedValue} // {JSON.stringify(dataPart[dataFragment], null, 2)}
-      readOnly
-    />
-  );
-};
-
-export const DataBoxNew = ({ dataPart, dataFragment }) => {
-  const data = dataPart[dataFragment];
-
   if (!Array.isArray(data) || data.length === 0) {
-    return <div className="data-table-wrapper">No Data available yet</div>;
+    return <div className="data-table-wrapper"> {"    "} </div>;
   }
 
   // Alle Keys (Spaltenüberschriften) aus dem ersten Dict
@@ -197,6 +166,41 @@ export const DataBoxNew = ({ dataPart, dataFragment }) => {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+};
+
+export const ControlBoxModal = ({ controlPart, isVisible, onClose }) => {
+  if (!isVisible) return null; // Nichts rendern, wenn das Modal nicht sichtbar ist
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        {" "}
+        {/* Stoppt das Propagieren des Klicks */}
+        {/* <button className="close-button" onClick={onClose}>
+          &times;
+        </button> */}
+        <h3>Request validation</h3>
+        <ControlBox
+          controlPart={controlPart}
+          caption="user question"
+          height="40px"
+          controlFragment="user question"
+        />
+        <ControlBox
+          controlPart={controlPart}
+          caption="RAG-retrieval: relevant tables"
+          height="40px"
+          controlFragment="RAG-retrieval (relevant tables)"
+        />
+        <ControlBox
+          controlPart={controlPart}
+          caption="SQL query"
+          height="120px"
+          controlFragment="SQL query"
+        />
       </div>
     </div>
   );

@@ -74,6 +74,15 @@ h3 {
   gap: 0.8rem;
 }
 
+.question-form {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .question-box {
   height: 100%;
   width: 80%;
@@ -125,6 +134,16 @@ button:hover {
   gap: 0.8rem;
 }
 
+/* ########## classes for DATA  container  */
+.data-container {
+  width: 100%;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .data-box {
   width: 90%;
   height: 200px;
@@ -138,35 +157,9 @@ button:hover {
   resize: none;
 }
 
-.control-item {
-  width: 90%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 1rem;
-}
-.control-caption {
-  width: 20%;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.control-box {
-  width: 80%;
-  background-color: #f7f7f7;
-  color: #5a3e2b;
-  font-family: inherit;
-  font-size: 1.4rem;
-  padding: 1.2rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  resize: none;
-}
-
-/* ###################################   other classes  */
 .data-table-wrapper {
   width: 90%;
-  height: 240px;
+  height: 90%;
   padding: 0.2rem;
 }
 
@@ -201,4 +194,68 @@ button:hover {
   padding: 8px;
   font-size: 1.8rem;
   text-align: left;
+}
+
+/* ########## classes for CONTROL Modal */
+.control-container {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Transparenter schwarzer Hintergrund */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Überlagert alles andere */
+}
+
+/* Modal - Das eigentliche Popup */
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 80%;
+  z-index: 1001; /* Höher als das Overlay */
+  position: relative;
+}
+
+.control-item {
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+.control-caption {
+  width: 20%;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.control-box {
+  width: 80%;
+  background-color: #f7f7f7;
+  color: #5a3e2b;
+  font-family: inherit;
+  font-size: 1.4rem;
+  padding: 1.2rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  resize: none;
 }
