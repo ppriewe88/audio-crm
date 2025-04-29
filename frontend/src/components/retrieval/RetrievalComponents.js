@@ -71,7 +71,10 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
         />
         <button>Submit question</button>
       </form>
-      <SpeechRecognitionButton onTranscript={handleTranscript} />
+      <SpeechRecognitionButton
+        onTranscript={handleTranscript}
+        returnMode="chunks" // "textBlock" or "chunks"
+      />
     </>
   );
 };

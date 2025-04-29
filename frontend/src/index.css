@@ -107,6 +107,11 @@ button:hover {
   color: #f7f7f7;
 }
 
+.button.recording {
+  background-color: red !important;
+  color: white;
+}
+
 /* ########## classes for response container  */
 .response-container {
   width: 70%;

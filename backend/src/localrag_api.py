@@ -143,7 +143,7 @@ async def get_context_and_send_request(question: str = Form(...)):
         print("\nconnecting to database")
         connection = data_retrieval.establish_database_connection()
         # extract sql query and send to database
-        response_query = llm_response[len("[Query:]"):]
+        response_query = llm_response
         print("send query to database...")
         query_results = data_retrieval.make_query(response_query, connection)
         print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)

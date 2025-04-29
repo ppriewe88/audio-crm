@@ -69,7 +69,10 @@ export const CreationTasks = () => {
         </div>
       </div>
 
-      <SpeechRecognitionButton onTranscript={handleTranscript} />
+      <SpeechRecognitionButton
+        onTranscript={handleTranscript}
+        returnMode="textBlock"
+      />
     </div>
   );
 };
