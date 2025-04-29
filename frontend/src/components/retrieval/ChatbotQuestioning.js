@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { SpeechRecognitionButton } from "../speech_recognition/SpeechRecognition";
+import "./retrieval.css";
 
 // ####################################### ChatbotQuestioning
 // this component is responsible for the user input (question)
@@ -51,7 +52,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
 
   // handler for transcript received by speech recognition
   const handleTranscript = (transcript) => {
-    console.log("Erkannt:", transcript);
+    console.log("recognized text:", transcript);
     setUserQuestion(transcript); // Update the text area with the transcribed text
   };
 

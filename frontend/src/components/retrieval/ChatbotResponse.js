@@ -101,23 +101,31 @@ export const ControlBoxModal = ({ controlPart, isVisible, onClose }) => {
         {/* <button className="close-button" onClick={onClose}>
           &times;
         </button> */}
-        <h3>Request validation</h3>
+        <h3
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "10px",
+          }}
+        >
+          Request validation
+        </h3>
         <ControlBox
           controlPart={controlPart}
           caption="user question"
-          height="40px"
+          height="100px"
           controlFragment="user question"
         />
         <ControlBox
           controlPart={controlPart}
           caption="RAG-retrieval: relevant tables"
-          height="40px"
+          height="70px"
           controlFragment="RAG-retrieval (relevant tables)"
         />
         <ControlBox
           controlPart={controlPart}
           caption="SQL query"
-          height="120px"
+          height="200px"
           controlFragment="SQL query"
         />
       </div>
