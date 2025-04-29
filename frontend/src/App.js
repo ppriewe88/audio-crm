@@ -1,8 +1,6 @@
 import { useState } from "react";
-import {
-  ChatbotQuestioning,
-  ChatbotResponse,
-} from "./components/retrieval/RetrievalComponents";
+import { ChatbotQuestioning } from "./components/retrieval/ChatbotQuestioning";
+import { ChatbotResponse } from "./components/retrieval/ChatbotResponse";
 import { CreationTasks } from "./components/creation/CreationComponents_new";
 
 // ########################################################### App

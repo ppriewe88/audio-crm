@@ -73,7 +73,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
             setUserQuestion(e.target.value);
           }}
         />
-        <button>Submit question</button>
+        <button>Submit request</button>
       </form>
     </div>
   );
@@ -119,10 +119,7 @@ export const ChatbotResponse = ({ llmResponse }) => {
         <DataBox dataPart={dataPart} dataFragment={"query_results"} />
       </div>
       <div className="control-container">
-        <button
-          onClick={toggleModal}
-          style={{ marginBottom: "10px", padding: "10px", fontSize: "14px" }}
-        >
+        <button onClick={toggleModal}>
           {isModalVisible ? "Close Control Section" : "Show Control Section"}
         </button>
         <ControlBoxModal

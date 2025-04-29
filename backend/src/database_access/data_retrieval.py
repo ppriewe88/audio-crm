@@ -24,13 +24,30 @@ def make_query(input_query, connection):
         # set cursor and execute query
         cursor = connection.cursor()
         cursor.execute(input_query)
-        # extract column names of retrieved results
-        column_names = [column[0] for column in cursor.description]
-        # extract all rows of retrieved results
-        rows = cursor.fetchall()
-        # convert rows to list of dictionaries
-        results = [dict(zip(column_names, row)) for row in rows]
-        return results
+
+        # if query is reading, cursor.description is nor None
+        if cursor.description:
+            # extract column names of retrieved results
+            column_names = [column[0] for column in cursor.description]
+            # extract all rows of retrieved results
+            rows = cursor.fetchall()
+            # convert rows to list of dictionaries
+            results = [dict(zip(column_names, row)) for row in rows]
+            return results
+        # if query is writing, cursor.description is None
+        else:
+            # query is writing. Check, if OUTPUT-Statement returns results
+            try:
+                rows = cursor.fetchall()
+                if rows:
+                    column_names = [column[0] for column in cursor.description]
+                    results = [dict(zip(column_names, row)) for row in rows]
+                    connection.commit()
+                    return results
+            except:
+                # no fetchable result set. Just commit and return success message
+                connection.commit()
+                return {"status": "success", "message": "Query executed, no data returned."}
     except Exception as e:
         print(f"Error during execution of sql-query:\n{e}")
         return None

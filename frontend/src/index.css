@@ -58,7 +58,7 @@ h3 {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  background-color: #8ea3f8;
+  background-color: #d6dcf8;
 }
 
 /* ########## classes for question container  */
@@ -99,8 +99,8 @@ h3 {
 
 button {
   width: 80%;
-  background-color: #c9d1df;
-  color: #5176b5;
+  background-color: #b4bdce;
+  color: #2b4675;
   font-family: inherit;
   border: none;
   border-radius: 10pt;
