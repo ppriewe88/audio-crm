@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { SpeechRecognitionButton } from "../speech_recognition/SpeechRecognition";
+import { SpeechRecognitionButtonRetrieval } from "../speech_recognition/SpeechRecognitionRetrieval";
 import "./retrieval.css";
 
 // ####################################### ChatbotQuestioning
@@ -59,7 +59,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
   return (
     <div className="question-container">
       <h3>Enter question for chatbot</h3>
-      <SpeechRecognitionButton
+      <SpeechRecognitionButtonRetrieval
         onTranscript={handleTranscript}
         returnMode="chunks" // "textBlock" or "chunks"
       />

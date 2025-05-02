@@ -50,6 +50,18 @@ elif used_language == "de":
     - Wenn du Ergebnisse einschränken musst (z. B. den höchsten Wert), verwende niemals „LIMIT 1“ innerhalb eines ORDER BY-Blocks oder sonstwo. Stattdessen verwende „SELECT TOP 1“, wenn nötig.
     - Beginnt die Nutzerfrage mit „TOP X:“ (wobei X eine positive ganze Zahl ist), verwende „SELECT TOP X“ in der ersten SELECT-Klausel.
     - Beispiel für die Regel oben (Nutzer fragt: „TOP 1: Welcher Kunde hat die meisten Bestellungen aufgegeben?“): "SELECT TOP 1 c.name, COUNT(o.id) AS total_orders FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.name ORDER BY total_orders DESC"
-
+    - Wenn du im finalen SELECT-Block die Spalte "id" aus der Tabelle inventory_storagelocations anzeigst, zeige direkt rechts daneben **immer** auch die Spalte "name" aus der Tabelle inventory_storagelocations an. 
+    - Wenn du im finalen SELECT-Block die Spalte "id" aus der Tabelle products anzeigst, zeige direkt danach **immer** auch die Spalte "name" aus der Tabelle products an.
+    - Wenn du im finalen SELECT-Block die Spalte "id" aus der Tabelle orders_status anzeigst, zeige direkt danach **immer** auch die Spalte "name" aus der Tabelle orders_status an.
+    - Wenn du im finalen SELECT-Block die Spalte "id" aus der Tabelle invoices_status anzeigst, zeige direkt danach **immer** auch die Spalte "name" aus der Tabelle invoices_status an.
+    - Zeige im finalen SELECT-Block nicht die Spalte "status_id" aus der Tabelle orders an, sondern stattdessen die Spalte "name" aus der Tabelle orders_status an.
+    - Zeige im finalen SELECT-Block nicht die Spalte "status_id" aus der Tabelle invoices an, sondern stattdessen die Spalte "name" aus der Tabelle invoices_status an.
+    - Verwende bei Bestellungen nie "SELECT * FROM orders", sondern wähle die anzuzeigenden Spalten explizit aus.
+    - Verwende bei Rechnungen nie "SELECT * FROM invoices", sondern wähle die anzuzeigenden Spalten explizit aus.
+    - Wenn du in der Nutzerfrage nach einem Rechnungsstatus (mit deutscher Statusbezeichnung) gefragt wirst, beachte folgende Übersetzungen von deutsch nach englisch: "bezahlt" = "paid", "offen"/"unbezahlt" = "unpaid", "überfällig" = "overdue".
+    - Wenn nach "Bestellungen" gefragt wird, sind immer Einträge aus der Tabelle "orders" gemeint.
+    - Wenn nach "Rechnungen" gefragt wird, sind immer Einträge aus der Tabelle "invoices" gemeint.
+    - Für die Tabelle "invoices_status" verwendest du **nie** den alias "is", sondern immer den alias "invst".
+    - Verwende **immer einen alias für jede Tabelle** und gib bei jeder Spalte im SELECT den alias an! Arbeite **niemals** ohne alias!
     """
 else: raise ValueError("No language specified!. Please choose 'en' or 'de'.")

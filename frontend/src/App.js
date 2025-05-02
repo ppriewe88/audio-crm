@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { ChatbotQuestioning } from "./components/retrieval/ChatbotQuestioning";
 import { ChatbotResponse } from "./components/retrieval/ChatbotResponse";
-import {
-  CreationResults,
-  CreationTasks,
-  CreationWizard,
-} from "./components/creation/CreationComponents_new";
+import { CreationPanel } from "./components/creation/CreationComponents";
 
 // ########################################################### App
 export default function App() {
@@ -22,11 +18,11 @@ export default function App() {
           {activeTab === "retrieval" && (
             <>
               <h1>Smart Data Retriever!</h1>
-              <p style={{ textAlign: "center" }}>
+              <p style={{ textAlign: "center", fontSize: "2rem" }}>
                 Welcome to an easy local RAG application to retrieve data using
                 AI!
               </p>
-              <p style={{ textAlign: "center" }}>
+              <p style={{ textAlign: "center", fontSize: "2rem" }}>
                 Simply ask the Chatbot and get all the data you need!
               </p>
               <div className="chatbot-container">
@@ -39,15 +35,18 @@ export default function App() {
           {activeTab === "creationTasks" && (
             <>
               <h1>Audio creation tasks!</h1>
-              <p style={{ textAlign: "center" }}>Blablabla!</p>
-              <p style={{ textAlign: "center" }}>
+              <p style={{ textAlign: "center", fontSize: "2rem" }}>
+                Blablabla!
+              </p>
+              <p style={{ textAlign: "center", fontSize: "2rem" }}>
                 Talk to the UI to create data!
               </p>
-              <CreationTasks />
+              {/* <CreationTasks />
               <div className="creation-container">
                 <CreationWizard />
                 <CreationResults />
-              </div>
+              </div> */}
+              <CreationPanel />
             </>
           )}
         </div>

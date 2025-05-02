@@ -5,7 +5,7 @@ const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognitionButton = SpeechRecognition ? new SpeechRecognition() : null;
 
-export const SpeechRecognitionButton = ({
+export const SpeechRecognitionButtonRetrieval = ({
   width = "80%",
   onTranscript,
   returnMode = "textBlock",
@@ -18,6 +18,7 @@ export const SpeechRecognitionButton = ({
   } else if (language === "en-GB" || language === "en-US") {
     stopWord = "stop";
   }
+
   useEffect(() => {
     if (!recognitionButton) return;
 
@@ -36,7 +37,7 @@ export const SpeechRecognitionButton = ({
 
         if (transcript.includes(stopWord)) {
           recognitionButton.stop();
-          console.log("Stoppwort erkannt: Aufnahme beendet");
+          console.log("recognized stopword; record stopped");
           return; // nicht weitermachen
         }
 
@@ -56,9 +57,9 @@ export const SpeechRecognitionButton = ({
         if (event.results[0].isFinal && onTranscript) {
           const transcript = event.results[0][0].transcript.toLowerCase();
 
-          if (transcript.includes("stopp")) {
+          if (transcript.includes(stopWord)) {
             recognitionButton.stop();
-            console.log("Stoppwort erkannt: Aufnahme beendet");
+            console.log("recognized stopword; record stopped");
             return;
           }
 

@@ -1,125 +1,130 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { SpeechRecognitionButton } from "../speech_recognition/SpeechRecognition";
+import React, { useState, useRef } from "react";
+import { SpeechRecognitionButtonCreation } from "../speech_recognition/SpeechRecognitionCreation";
+import "./creation.css";
 
-// Check if browser supports SpeechRecognition
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+export const CARD_IDENTIFIERS = {
+  links: "bestellung anlegen",
+  mitte: "lagerort checken",
+  rechts: "rechts",
+};
 
-export const CreationTasks = () => {
-  const [isListening, setIsListening] = useState(false);
+export const CARD_TITLES = {
+  links: "Bestellung anlegen",
+  mitte: "Lagerort checken",
+  rechts: "rechts",
+};
+
+export const CreationPanel = () => {
   const [activeCard, setActiveCard] = useState(null);
+  const [displayedSpeechInput, setDisplayedSpeechInput] = useState("");
 
-  useEffect(() => {
-    if (!recognition) return;
-
-    recognition.continuous = false; // nur ein Satz pro Aufnahme
-    recognition.lang = "en-GB"; // deutsche Sprache
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      console.log("Erkannt:", transcript);
-
-      // log resulting transcript to console
-      console.log("Transkript: ", transcript);
-
-      if (transcript.includes("links")) {
-        setActiveCard("links");
-      } else if (transcript.includes("mitte")) {
-        setActiveCard("mitte");
-      } else if (transcript.includes("rechts")) {
-        setActiveCard("rechts");
-      }
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-  }, []);
-
-  const startListening = () => {
-    if (!recognition) {
-      alert("Dein Browser unterstützt keine Sprachaufnahme.");
-      return;
-    }
-    setIsListening(true);
-    recognition.start();
-  };
-
-  const stopListening = () => {
-    if (!recognition) return;
-    recognition.stop();
-  };
-
-  const handleButtonClick = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
+  const handleTranscript = (transcript) => {
+    console.log("recognized:", transcript);
+    // Only show in textarea if it's not a command
+    setDisplayedSpeechInput(transcript);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "links" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Links
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "mitte" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Mitte
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            height: "150px",
-            backgroundColor: activeCard === "rechts" ? "red" : "#eee",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-          }}
-        >
-          Rechts
-        </div>
+    <>
+      <SpeechRecognitionButtonCreation
+        width="150px"
+        onTranscript={handleTranscript}
+        returnMode="chunks"
+        activeCard={activeCard}
+        setActiveCard={setActiveCard}
+      />
+      <CreationTasks activeCard={activeCard} />
+      <div className="creation-container">
+        <CreationWizard
+          activeCard={activeCard}
+          speechInput={displayedSpeechInput}
+        />
+        <CreationResults />
       </div>
+    </>
+  );
+};
 
-      <button
-        onClick={handleButtonClick}
-        style={{ padding: "10px 20px", fontSize: "16px" }}
-      >
-        {isListening ? "Aufnahme beenden" : "Aufnahme starten"}
-      </button>
-
-      <SpeechRecognitionButton />
+export const CreationTasks = ({ activeCard }) => {
+  return (
+    <div className="tasks-container">
+      <div className="cards-container">
+        {Object.entries(CARD_IDENTIFIERS).map(([key, ident]) => (
+          <TaskCard
+            key={key}
+            activeCard={activeCard}
+            cardIdent={ident}
+            cardTitle={CARD_TITLES[key]}
+          />
+        ))}
+      </div>
     </div>
   );
+};
+
+const TaskCard = ({ activeCard, cardIdent, cardTitle }) => {
+  return (
+    <div
+      className="card"
+      style={{
+        backgroundColor: activeCard === cardIdent ? "red" : "#eee",
+        color: activeCard === cardIdent ? "white" : "black",
+      }}
+    >
+      {cardTitle}
+    </div>
+  );
+};
+
+export const CreationWizard = ({ activeCard, speechInput }) => {
+  return (
+    <div className="creation-control-container">
+      {activeCard === CARD_IDENTIFIERS.mitte ? (
+        <>
+          <p style={{ marginLeft: "30px" }}>Artikelnummer einsprechen</p>
+          <textarea className="speech-box" value={speechInput} />
+        </>
+      ) : (
+        "Platzhalter"
+      )}
+    </div>
+  );
+};
+
+const handleActionBasedOnCard = (activeCard, interimSpeechInput) => {
+  console.log(activeCard);
+  switch (activeCard) {
+    case CARD_IDENTIFIERS.links:
+      // Logik für die "Links"-Karte
+      console.log("Abschicken für die 'Links' Karte!");
+      submitInput(interimSpeechInput);
+      break;
+    case CARD_IDENTIFIERS.mitte:
+      // Logik für die "Mitte"-Karte
+      console.log("Abschicken für die 'Mitte' Karte!");
+      submitInput(interimSpeechInput);
+      break;
+    case CARD_IDENTIFIERS.rechts:
+      // Logik für die "Rechts"-Karte
+      console.log("Abschicken für die 'Rechts' Karte!");
+      submitInput(interimSpeechInput);
+      break;
+    default:
+      console.log("Kein aktiver Card-Status gefunden.");
+  }
+};
+
+const submitInput = (interimSpeechInput) => {
+  console.log("Absenden des Textes:", interimSpeechInput);
+  // Hier kannst du den API-Call einbauen, den du später einfügst.
+  // Zum Beispiel:
+  // fetch("your-api-endpoint", {
+  //   method: "POST",
+  //   body: JSON.stringify({ text: speechInput }),
+  //   headers: { "Content-Type": "application/json" }
+  // });
+};
+
+export const CreationResults = () => {
+  return <div className="creation-results-container">Platzhalter</div>;
 };
