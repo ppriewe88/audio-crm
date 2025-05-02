@@ -3,6 +3,7 @@ import uvicorn
 import localrag_patrick as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 import database_access.data_retrieval as data_retrieval
+import database_access.custom_queries as queries
 import requests
 from fastapi.middleware.cors import CORSMiddleware # middleware. requirement for frontend-suitable endpoint
 
@@ -23,17 +24,21 @@ app.add_middleware(
 ' ################ initialization block for vault, embeddings, global variables #################'
 @app.on_event("startup")
 async def startup_event():
+    
     # prepare ollama model for local testing
     global args, model, client
     args = localrag.parse_cli_input()
     model = args.model
     client = localrag.configure_ollama_client()
+    
     # prepare system message and vault content
-    global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
-    system_message =  find_sql_query
-    vault_content = localrag.load_vault_content()
-    vault_embeddings = localrag.generate_embeddings_for_vault_content(vault_content)
-    vault_embeddings_tensor = localrag.generate_vault_embeddings_tensor(vault_embeddings)
+    llm_active = False
+    if llm_active:
+        global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
+        system_message =  find_sql_query
+        vault_content = localrag.load_vault_content()
+        vault_embeddings = localrag.generate_embeddings_for_vault_content(vault_content)
+        vault_embeddings_tensor = localrag.generate_vault_embeddings_tensor(vault_embeddings)
 
 ' ######################## endpoint to make requests for LLM and database #################'
 @app.post("/get_context_and_send_request")
@@ -153,6 +158,23 @@ async def get_context_and_send_request(question: str = Form(...)):
         query_results = "No results retrieved"
 
     return {"user question": question, "RAG-retrieval (relevant tables)": relevant_tables, "llm_response": response_query, "query_results": query_results}
+
+' ###################### endpoint to get storage locations/inventories #################'
+@app.post("/get_storage_info")
+async def get_storage_info(articlenumber: str = Form(...)):
+    # create query for getting storage locations and inventories
+    query = queries.get_storage_info.replace("[PLACEHOLDER]", articlenumber)
+    # Send the SQL clause to the database and get the result
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    print("send query to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+    
+    return {"articlenumber": articlenumber, "query_results": query_results}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

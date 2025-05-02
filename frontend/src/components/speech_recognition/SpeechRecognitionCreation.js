@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CARD_IDENTIFIERS } from "../creation/CreationComponents";
+import { getStorageLocations } from "../creation/creationExecutors";
+
 // Check if browser supports SpeechRecognition
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -11,6 +13,8 @@ export const SpeechRecognitionButtonCreation = ({
   returnMode = "chunks",
   activeCard,
   setActiveCard,
+  setSendingButtonActive,
+  setInfoFromAPI,
 }) => {
   // ######################### states and constants/variables
   // state for active/inactive button
@@ -24,10 +28,12 @@ export const SpeechRecognitionButtonCreation = ({
     stopWord = "stop";
   }
 
-  // ######################### buffer for chunks
+  // ######################### buffer for storing longer sentences as ref!
   const chunkBufferRef = useRef([]);
-  // ######################### buffer for blockage of speech recognition
+
+  // ######################### ref blockage flags of speech recognition
   const hasHandledCommandRef = useRef(false);
+
   // ######################### main control flow for speech recognition
   // useEffect to initialize speech recognition and handle results
   useEffect(() => {
@@ -40,54 +46,83 @@ export const SpeechRecognitionButtonCreation = ({
 
     // ################ main control flow for speech recognition
     recognitionButton.onresult = (event) => {
-      let interimTranscript = "";
+      let cumulativeTranscript = "";
 
+      // ################## looping over events (=interim results!!)
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const result = event.results[i];
         const transcript = result[0].transcript.toLowerCase().trim();
 
+        // ################## control print
+        console.log("transcript in speech component:", transcript);
+        console.log("cumulativeTranscript:", cumulativeTranscript);
+
+        // ################## CONDITION: stop word
         if (transcript.includes(stopWord)) {
           recognitionButton.stop();
           console.log("recognized stopword; record stopped");
           return;
         }
 
+        // ########################### CONDITION: card selection
         if (transcript.includes(CARD_IDENTIFIERS.links)) {
           console.log("BESTELLUNG ANLEGEN");
           setActiveCard(CARD_IDENTIFIERS.links);
         }
+
+        // ########################### CONDITION: card selection "mitte"
+        // ############## check card status. If switching on this card, reset the buffer
         if (transcript.includes(CARD_IDENTIFIERS.mitte)) {
           console.log("LAGERORT CHECKEN");
           onTranscript("");
           setActiveCard(CARD_IDENTIFIERS.mitte);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
+          setSendingButtonActive(false);
           setTimeout(() => {
             hasHandledCommandRef.current = false;
           }, 1000); // Reset after 2 seconds
           return;
         }
+        // ############## check card specific submission
+        const submitCardInputs =
+          activeCard === CARD_IDENTIFIERS.mitte && transcript.includes("los");
+        if (submitCardInputs) {
+          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          const lastChunk =
+            chunkBufferRef.current[chunkBufferRef.current.length - 1];
+          getStorageLocations(lastChunk, setInfoFromAPI);
+          return; // Beende Verarbeitung für diesen Durchlauf
+        }
+
+        // ########################### CONDITION: card selection
         if (transcript.includes(CARD_IDENTIFIERS.rechts)) {
           console.log("RECHTS");
           setActiveCard(CARD_IDENTIFIERS.rechts);
         }
 
+        // ########################### CONDITION: final transcript (pause/sentence ending)
         if (result.isFinal) {
           chunkBufferRef.current.push(transcript);
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          if (activeCard === CARD_IDENTIFIERS.mitte) {
+            setSendingButtonActive(true);
+          }
         } else {
-          interimTranscript += transcript;
+          cumulativeTranscript += transcript;
+          setSendingButtonActive(false);
         }
       }
 
-      // onTranscript(chunkBufferRef.current.join(" ")); // Send the final transcript to the parent component
       // Optional: Live-Chunks
       if (
         !hasHandledCommandRef.current &&
         returnMode === "chunks" &&
-        interimTranscript.trim() &&
+        cumulativeTranscript.trim() &&
         onTranscript
       ) {
-        onTranscript(interimTranscript);
+        onTranscript(cumulativeTranscript);
       }
     };
 

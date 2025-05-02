@@ -25,7 +25,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
       const formData = new FormData();
       formData.append("question", userQuestion);
 
-      // Send the request to the new endpoint
+      // Send the request to endpoint
       const response = await fetch(
         "http://127.0.0.1:8000/get_context_and_send_request",
         {

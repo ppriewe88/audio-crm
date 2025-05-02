@@ -17,9 +17,11 @@ export const CARD_TITLES = {
 export const CreationPanel = () => {
   const [activeCard, setActiveCard] = useState(null);
   const [displayedSpeechInput, setDisplayedSpeechInput] = useState("");
+  const [sendingButtonActive, setSendingButtonActive] = useState(false);
+  const [infoFromAPI, setInfoFromAPI] = useState("");
 
   const handleTranscript = (transcript) => {
-    console.log("recognized:", transcript);
+    console.log("received transcript (handler):", transcript);
     // Only show in textarea if it's not a command
     setDisplayedSpeechInput(transcript);
   };
@@ -32,10 +34,13 @@ export const CreationPanel = () => {
         returnMode="chunks"
         activeCard={activeCard}
         setActiveCard={setActiveCard}
+        setSendingButtonActive={setSendingButtonActive}
+        setInfoFromAPI={setInfoFromAPI}
       />
       <CreationTasks activeCard={activeCard} />
       <div className="creation-container">
         <CreationWizard
+          sendingButtonActive={sendingButtonActive}
           activeCard={activeCard}
           speechInput={displayedSpeechInput}
         />
@@ -76,13 +81,30 @@ const TaskCard = ({ activeCard, cardIdent, cardTitle }) => {
   );
 };
 
-export const CreationWizard = ({ activeCard, speechInput }) => {
+export const CreationWizard = ({
+  activeCard,
+  sendingButtonActive,
+  speechInput,
+}) => {
   return (
     <div className="creation-control-container">
       {activeCard === CARD_IDENTIFIERS.mitte ? (
         <>
-          <p style={{ marginLeft: "30px" }}>Artikelnummer einsprechen</p>
+          <p
+            style={{
+              marginLeft: "30px",
+              backgroundColor: sendingButtonActive ? "green" : "lightgray",
+              color: sendingButtonActive ? "white" : "black",
+              borderRadius: "5px",
+              marginRight: "25px",
+              padding: "5px",
+              fontSize: "1.6rem",
+            }}
+          >
+            Artikelnummer einsprechen - dann "Los"!
+          </p>
           <textarea className="speech-box" value={speechInput} />
+          {/* <button>Los!</button> */}
         </>
       ) : (
         "Platzhalter"
@@ -91,40 +113,46 @@ export const CreationWizard = ({ activeCard, speechInput }) => {
   );
 };
 
-const handleActionBasedOnCard = (activeCard, interimSpeechInput) => {
-  console.log(activeCard);
-  switch (activeCard) {
-    case CARD_IDENTIFIERS.links:
-      // Logik für die "Links"-Karte
-      console.log("Abschicken für die 'Links' Karte!");
-      submitInput(interimSpeechInput);
-      break;
-    case CARD_IDENTIFIERS.mitte:
-      // Logik für die "Mitte"-Karte
-      console.log("Abschicken für die 'Mitte' Karte!");
-      submitInput(interimSpeechInput);
-      break;
-    case CARD_IDENTIFIERS.rechts:
-      // Logik für die "Rechts"-Karte
-      console.log("Abschicken für die 'Rechts' Karte!");
-      submitInput(interimSpeechInput);
-      break;
-    default:
-      console.log("Kein aktiver Card-Status gefunden.");
+export const CreationResults = ({ infoFromAPI }) => {
+  return (
+    <div className="creation-results-container">
+      <StorageInfo infoFromAPI={infoFromAPI} />
+    </div>
+  );
+};
+
+export const StorageInfo = ({ infoFromAPI }) => {
+  const data = infoFromAPI;
+
+  if (!Array.isArray(data) || data.length === 0) {
+    return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-};
+  console.log("inside function:", data);
+  // Alle Keys (Spaltenüberschriften) aus dem ersten Dict
+  const headers = Object.keys(data);
 
-const submitInput = (interimSpeechInput) => {
-  console.log("Absenden des Textes:", interimSpeechInput);
-  // Hier kannst du den API-Call einbauen, den du später einfügst.
-  // Zum Beispiel:
-  // fetch("your-api-endpoint", {
-  //   method: "POST",
-  //   body: JSON.stringify({ text: speechInput }),
-  //   headers: { "Content-Type": "application/json" }
-  // });
-};
-
-export const CreationResults = () => {
-  return <div className="creation-results-container">Platzhalter</div>;
+  return (
+    <div className="creation-data-table-wrapper">
+      <div className="creation-data-table-scroll">
+        <table className="creation-data-table">
+          <thead>
+            <tr>
+              {headers.map((header) => (
+                <th key={header}>{header || "(empty)"}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, idx) => (
+              <tr key={idx}>
+                {headers.map((header) => (
+                  <td key={header}>{row[header]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
