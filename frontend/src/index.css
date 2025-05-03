@@ -49,6 +49,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
 }
 
 button {
@@ -67,8 +68,8 @@ button {
 }
 
 button:hover {
-  background-color: #5176b5;
-  color: #f7f7f7;
+  background-color: #5176b5 !important;
+  color: #f7f7f7 !important;
 }
 
 .button.recording {

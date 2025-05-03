@@ -1,16 +1,26 @@
 import React from "react";
 import { useState } from "react";
+import { db_dict_de } from "../../dictionaries/database_dicts";
+import { systemPrompt } from "./SystemPrompt";
 import "./retrieval.css";
 
 // ####################################### ChatbotResponse
 // these components are responsible for displaying the response from the LLM
 // they will display the data and control parts of the response
 export const ChatbotResponse = ({ llmResponse }) => {
-  // state to control modal (ControlBoxModal)
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  // handler to manage modal visibility
-  const toggleModal = () => {
-    setIsModalVisible(!isModalVisible);
+  // states to control modals (ControlBoxModal, ER-diagram, LLM system prompt)
+  const [isControlSectionVisible, setIsControlSectionVisible] = useState(false);
+  const [isERDiagramVisible, setIsERDiagramVisible] = useState(false);
+  const [isSystemPromptVisible, setIsSystemPromptVisible] = useState(false);
+  // handlers to manage modal visibility
+  const toggleControlSection = () => {
+    setIsControlSectionVisible(!isControlSectionVisible);
+  };
+  const toggleERDiagram = () => {
+    setIsERDiagramVisible(!isERDiagramVisible);
+  };
+  const toggleSystemPrompt = () => {
+    setIsSystemPromptVisible(!isSystemPromptVisible);
   };
   // if (!llmResponse) use empty data
   // else deconstruct Chatbot response (llmResponse);
@@ -37,25 +47,46 @@ export const ChatbotResponse = ({ llmResponse }) => {
 
   return (
     <div className="response-container">
-      <h3>Retrieved data</h3>
+      <h3>Daten</h3>
       <div className="data-container">
-        <DataBox dataPart={dataPart} dataFragment={"query_results"} />
+        <DataBox
+          dataPart={dataPart}
+          dataFragment={"query_results"}
+          dict={db_dict_de}
+        />
       </div>
-      <div className="control-container">
-        <button onClick={toggleModal}>
-          {isModalVisible ? "Close Control Section" : "Show Control Section"}
+      <div
+        className="control-container"
+        style={{ flexDirection: "Row", gap: "10px" }}
+      >
+        <button onClick={toggleControlSection} style={{ width: "25%" }}>
+          Kontrollbereich
         </button>
         <ControlBoxModal
           controlPart={controlPart}
-          isVisible={isModalVisible}
-          onClose={toggleModal}
+          isVisible={isControlSectionVisible}
+          onClose={toggleControlSection}
+        />
+        <button onClick={toggleERDiagram} style={{ width: "25%" }}>
+          ER Diagramm
+        </button>
+        <ERDiagramModal
+          isVisible={isERDiagramVisible}
+          onClose={toggleERDiagram}
+        />
+        <button onClick={toggleSystemPrompt} style={{ width: "25%" }}>
+          LLM system prompt
+        </button>
+        <SystemPromptModal
+          isVisible={isSystemPromptVisible}
+          onClose={toggleSystemPrompt}
         />
       </div>
     </div>
   );
 };
 
-export const DataBox = ({ dataPart, dataFragment }) => {
+export const DataBox = ({ dataPart, dataFragment, dict }) => {
   const data = dataPart[dataFragment];
 
   if (!Array.isArray(data) || data.length === 0) {
@@ -72,7 +103,7 @@ export const DataBox = ({ dataPart, dataFragment }) => {
           <thead>
             <tr>
               {headers.map((header) => (
-                <th key={header}>{header || "(empty)"}</th>
+                <th key={header}>{dict[header] || header || "(empty)"}</th>
               ))}
             </tr>
           </thead>
@@ -92,16 +123,12 @@ export const DataBox = ({ dataPart, dataFragment }) => {
 };
 
 export const ControlBoxModal = ({ controlPart, isVisible, onClose }) => {
-  if (!isVisible) return null; // Nichts rendern, wenn das Modal nicht sichtbar ist
+  if (!isVisible) return null; // no rendering when modal not visible
 
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         {" "}
-        {/* Stoppt das Propagieren des Klicks */}
-        {/* <button className="close-button" onClick={onClose}>
-          &times;
-        </button> */}
         <h3
           style={{
             display: "flex",
@@ -158,6 +185,77 @@ export const ControlBox = ({
         value={formattedValue}
         readOnly
       />
+    </div>
+  );
+};
+
+export const ERDiagramModal = ({ isVisible, onClose }) => {
+  if (!isVisible) return null; // no rendering when modal not visible
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: "1300px", width: "80%" }}
+      >
+        <h3
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "10px",
+          }}
+        >
+          Datenbanktabellen
+        </h3>
+        <img
+          src="/assets/er_diagram.png"
+          alt="ER-Diagramm"
+          style={{
+            maxWidth: "100%",
+            height: "auto",
+            display: "block",
+            margin: "0 auto",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const SystemPromptModal = ({ isVisible, onClose }) => {
+  if (!isVisible) return null; // no rendering when modal not visible
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: "1600px", width: "80%" }}
+      >
+        <h3
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "10px",
+          }}
+        >
+          LMM system prompt
+        </h3>
+        <pre
+          style={{
+            whiteSpace: "pre",
+            backgroundColor: "#f0f0f0",
+            padding: "10px",
+            borderRadius: "5px",
+            maxHeight: "600px",
+            overflowY: "auto",
+            fontSize: "0.6em",
+          }}
+        >
+          {systemPrompt[0]}
+        </pre>
+      </div>
     </div>
   );
 };

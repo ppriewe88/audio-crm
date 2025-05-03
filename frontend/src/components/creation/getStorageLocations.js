@@ -52,6 +52,7 @@ export const GetStorageLocationsWizard = ({
   );
 };
 
+// #################### display for results #########
 export const GetStorageLocationsResults = ({ infoFromAPI }) => {
   const data = infoFromAPI?.query_results;
 

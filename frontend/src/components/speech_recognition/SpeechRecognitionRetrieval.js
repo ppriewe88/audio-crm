@@ -102,7 +102,7 @@ export const SpeechRecognitionButtonRetrieval = ({
         onClick={handleButtonClick}
         className={`button ${isListeningButton ? "recording" : ""}`}
       >
-        {isListeningButton ? "Stop recording" : "Start recording"}
+        {isListeningButton ? "Aufnahme beenden" : "Aufnahme starten"}
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-// #################### helper function ++++++++++
+// #################### helper function #################
 export const makeOrderCaching = (
   lastChunk,
   stepCounterWizard,
@@ -119,6 +119,130 @@ export const MakeOrderWizard = ({
         {[3.5, 4].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
+    </>
+  );
+};
+
+// #################### display for results #########
+export const MakeOrderResults = ({ infoFromAPI, dict }) => {
+  const orderData = infoFromAPI?.order;
+  const invoiceData = infoFromAPI?.invoice;
+  const pairData = infoFromAPI?.pair;
+  console.log("DATA:  ", orderData);
+  if (!Array.isArray(orderData) || orderData.length === 0) {
+    console.log("inside function:", orderData);
+    return <div className="creation-data-table-wrapper"> {"    "} </div>;
+  }
+  console.log("inside storageInfo function:", orderData);
+
+  // creating headers for order table
+  const orderHeaders = [
+    "order_id",
+    "customer_id",
+    "product_id",
+    "quantity",
+    "status",
+  ];
+  // creating headers for invoice table
+  const invoiceHeaders = [
+    "id",
+    "order_id",
+    "total_price",
+    "total_discount",
+    "total_price_discounted",
+    "due_limit",
+    "Zahltag",
+    "overdue_fee",
+    "status",
+  ];
+  // creating headers for order-invoice-pair table
+  const pairHeaders = [
+    "Bestell_ID",
+    "Bestellstatus",
+    "Auftragseingang",
+    "Kunden_ID",
+    "Produkt_ID",
+    "Bestellmenge",
+    "Rechnungs_ID",
+    "Umsatz",
+    "rabattierter_Umsatz",
+    "Mahngebühr",
+    "Zahlungsfrist",
+    "Zahltag",
+    "Rechnungsstatus",
+    "Status_Auftrag",
+  ];
+  return (
+    <>
+      <h3>Bestellung</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {orderHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {orderData.map((row, idx) => (
+                <tr key={idx}>
+                  {orderHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h3>Rechnung</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {invoiceHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {invoiceData.map((row, idx) => (
+                <tr key={idx}>
+                  {invoiceHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h3>Auftrag</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {pairHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pairData.map((row, idx) => (
+                <tr key={idx}>
+                  {pairHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 };

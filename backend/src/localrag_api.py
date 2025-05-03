@@ -26,11 +26,16 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     
-    # prepare ollama model for local testing
-    global args, model, client
-    args = localrag.parse_cli_input()
-    model = args.model
-    client = localrag.configure_ollama_client()
+    # configure usage
+    global usage 
+    usage =  "openAI" # "openAI" or "local"
+
+    # if local usage: prepare ollama model for local testing
+    if usage == "local":
+        global args, model, client
+        args = localrag.parse_cli_input()
+        model = args.model
+        client = localrag.configure_ollama_client()
     
     # prepare system message and vault content
     llm_active = False
@@ -73,31 +78,9 @@ async def get_context_and_send_request(question: str = Form(...)):
     ' ############### sending request to cloud-model / local model / openAI-API #####'
     # send request to Cloud-LLM (e.g. Azure OpenAI)
     
-    usage = "openAI" # "cloud" # "openAI"
+    # set default for successfull llm call and check, which usage is specified. Then do llm call
     llm_call_successfull = True
-    if usage == "cloud":
-        # TODO: implement cloud model request
-        print("sending request to cloud")
-        # api_url_cloud = "https://your-cloud-llm-endpoint.openai.azure.com/openai/deployments/deployment-name/chat/completions?api-version=2024-02-15-preview"
-        # llm_response = requests.post(
-        #     api_url_cloud,
-        #     headers={
-        #         "Content-Type": "application/json",
-        #         "api-key": "your-azure-key"
-        #     },
-        #     json={
-        #         "messages": [
-        #             {"role": "system", "content": system_message},
-        #             {"role": "user", "content": user_input_with_context}
-        #         ],
-        #         "temperature": 0.2,
-        #         "max_tokens": 1000,
-        #         "top_p": 1,
-        #         "frequency_penalty": 0,
-        #         "presence_penalty": 0
-        #     }
-        # )
-    elif usage == "local":
+    if usage == "local":
         print("running local test")
         api_url_local = "http://localhost:5000/chat"
         # send request to local LLM under different port (for testing and comparison of runtime)
@@ -164,11 +147,11 @@ async def get_context_and_send_request(question: str = Form(...)):
 @app.post("/get_storage_info")
 async def get_storage_info(articlenumber: str = Form(...)):
     # create query for getting storage locations and inventories
-    query = queries.get_storage_info.replace("[PLACEHOLDER]", articlenumber)
-    # Send the SQL clause to the database and get the result
+    query = queries.get_storage_info.replace("[product_id]", articlenumber)
+    # connect to database and send request
     print("\nconnecting to database")
     connection = data_retrieval.establish_database_connection()
-    print("send query to database...")
+    print("send query (get storage locations) to database...")
     query_results = data_retrieval.make_query(query, connection)
     print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
     connection.close()
@@ -179,10 +162,38 @@ async def get_storage_info(articlenumber: str = Form(...)):
 ' ###################### endpoint to insert orders #################'
 @app.post("/insert_order")
 async def get_data(request: Request):
+    # receiving request
     form = await request.form()
-    wizard_inputs_json = form.get("wizard_inputs")  # ein String wie '["1", "5", "5"]'
-    inputs_list = json.loads(wizard_inputs_json)  # Jetzt eine Python-Liste: ['1', '5', '5']
-    print(inputs_list)
+    # extracting data and reformatting
+    wizard_inputs_json = form.get("wizard_inputs")  # get array structure from input object (js-array)
+    inputs_list = json.loads(wizard_inputs_json)  # make python list from it
+    # connect to database and send request
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    # create query for inserting order
+    query = queries.insert_order.replace("[customer_id]", inputs_list[0]).replace("[product_id]", inputs_list[1]).replace("[quantity]", inputs_list[2])
+    print("send query (insert order) to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    # create query for getting order back
+    query = queries.get_inserted_order.replace("[customer_id]", inputs_list[0])
+    print("send query (get inserted order) to database...")
+    query_results_order = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results_order) + RESET_COLOR)
+    created_order_id = query_results_order[0]["order_id"]
+    # create query for getting corresponding invoice back
+    query = queries.get_corresponding_invoice.replace("[order_id]", str(created_order_id))
+    print("send query (get corresponding invoice) to database...")
+    query_results_invoice = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results_invoice) + RESET_COLOR)
+    # create query for getting corresponding order-invoice-pair back
+    query = queries.get_corresponding_pair.replace("[order_id]", str(created_order_id))
+    print("send query (get corresponding order-invoice-pair) to database...")
+    query_results_pair = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results_pair) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+
+    return {"order": query_results_order, "invoice": query_results_invoice, "pair": query_results_pair}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

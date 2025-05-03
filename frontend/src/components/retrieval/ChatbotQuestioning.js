@@ -58,7 +58,7 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
 
   return (
     <div className="question-container">
-      <h3>Enter question for chatbot</h3>
+      <h3>Datenanfrage an KI stellen</h3>
       <SpeechRecognitionButtonRetrieval
         onTranscript={handleTranscript}
         returnMode="chunks" // "textBlock" or "chunks"
@@ -67,14 +67,14 @@ export const ChatbotQuestioning = ({ setLlmResponse }) => {
         <textarea
           className="question-box"
           type="text"
-          placeholder="Enter your question here..."
+          placeholder="...hier Anfrage eingeben..."
           value={userQuestion}
           onChange={(e) => {
             console.log(e.target.value);
             setUserQuestion(e.target.value);
           }}
         />
-        <button>Submit request</button>
+        <button>Anfrage abschicken</button>
       </form>
     </div>
   );

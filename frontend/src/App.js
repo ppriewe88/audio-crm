@@ -18,12 +18,9 @@ export default function App() {
           {activeTab === "retrieval" && (
             <>
               <h1>Smart Data Retriever!</h1>
-              <p style={{ textAlign: "center", fontSize: "2rem" }}>
-                Welcome to an easy local RAG application to retrieve data using
-                AI!
-              </p>
-              <p style={{ textAlign: "center", fontSize: "2rem" }}>
-                Simply ask the Chatbot and get all the data you need!
+              <p style={{ textAlign: "center", fontSize: "2.4rem" }}>
+                It's RAG-time, baby! Frage die KI nach Daten,
+                Retrieval-Augmented Generation ist der Schlüssel!
               </p>
               <div className="chatbot-container">
                 {/* pass parental state as prop to children! */}
@@ -34,18 +31,10 @@ export default function App() {
           )}
           {activeTab === "creationTasks" && (
             <>
-              <h1>Audio creation tasks!</h1>
-              <p style={{ textAlign: "center", fontSize: "2rem" }}>
-                Blablabla!
+              <h1>Audio controlled tasks!</h1>
+              <p style={{ textAlign: "center", fontSize: "2.4rem" }}>
+                Steuere deine Datenworkflows - ganz ohne Tastatur!
               </p>
-              <p style={{ textAlign: "center", fontSize: "2rem" }}>
-                Talk to the UI to create data!
-              </p>
-              {/* <CreationTasks />
-              <div className="creation-container">
-                <CreationWizard />
-                <CreationResults />
-              </div> */}
               <CreationPanel />
             </>
           )}
@@ -66,10 +55,11 @@ const NavigationBar = ({ activeTab, setActiveTab }) => {
           width: "50%",
           backgroundColor: activeTab === "retrieval" ? "#5176b5" : "#c9d1df",
           color: activeTab === "retrieval" ? "#f7f7f7" : "#5176b5",
+          marginLeft: "10px",
         }}
         onClick={() => setActiveTab("retrieval")}
       >
-        Retriever
+        Datenabfragen
       </button>
       <button
         style={{
@@ -77,10 +67,11 @@ const NavigationBar = ({ activeTab, setActiveTab }) => {
           backgroundColor:
             activeTab === "creationTasks" ? "#5176b5" : "#c9d1df",
           color: activeTab === "creationTasks" ? "#f7f7f7" : "#5176b5",
+          marginRight: "10px",
         }}
         onClick={() => setActiveTab("creationTasks")}
       >
-        Creation Tasks
+        Aufgaben
       </button>
     </nav>
   );

@@ -4,23 +4,24 @@ import {
   GetStorageLocationsWizard,
   GetStorageLocationsResults,
 } from "./getStorageLocations";
-import { MakeOrderWizard } from "./makeOrder";
+import { MakeOrderWizard, MakeOrderResults } from "./makeOrder";
+import { db_dict_de } from "../../dictionaries/database_dicts";
 import "./creation.css";
 
 export const CARD_IDENTIFIERS = {
-  links: "bestellung anlegen",
-  mitte: "lagerort checken",
-  rechts: "aufgabe drei",
-  a: "aufgabe vier",
-  b: "aufgabe 5",
+  inventory: "bestände prüfen",
+  order: "bestellung anlegen",
+  invoice: "rechnung abschließen",
+  declined: "abgelehnt",
+  placeholder: "platzhalter",
 };
 
 export const CARD_TITLES = {
-  links: "Bestellung anlegen",
-  mitte: "Lagerort checken",
-  rechts: "Aufgabe 3",
-  a: "Aufgabe 4",
-  b: "Aufgabe 4",
+  inventory: "Bestände prüfen",
+  order: "Bestellung anlegen",
+  invoice: "Rechnung abschließen",
+  declined: "Abgelehnte Bestellungen",
+  placeholder: "Platzhalter",
 };
 
 export const CreationPanel = () => {
@@ -105,20 +106,20 @@ export const CreationWizard = ({
 }) => {
   return (
     <div className="creation-control-container">
-      {activeCard === CARD_IDENTIFIERS.links && (
+      {activeCard === CARD_IDENTIFIERS.order && (
         <MakeOrderWizard
           sendingButtonActive={sendingButtonActive}
           stepCounterWizard={stepCounterWizard}
           speechInput={speechInput}
         />
       )}
-      {activeCard === CARD_IDENTIFIERS.mitte && (
+      {activeCard === CARD_IDENTIFIERS.inventory && (
         <GetStorageLocationsWizard
           sendingButtonActive={sendingButtonActive}
           speechInput={speechInput}
         />
       )}
-      {activeCard === CARD_IDENTIFIERS.rechts &&
+      {activeCard === CARD_IDENTIFIERS.invoice &&
         "Platzhalter (Task-spezifischer Wizard)"}
       {activeCard === null && "Wizard"}
     </div>
@@ -128,11 +129,13 @@ export const CreationWizard = ({
 export const CreationResults = ({ activeCard, infoFromAPI }) => {
   return (
     <div className="creation-results-container">
-      {activeCard === CARD_IDENTIFIERS.links && "KOMMT NOCH"}
-      {activeCard === CARD_IDENTIFIERS.mitte && (
+      {activeCard === CARD_IDENTIFIERS.order && (
+        <MakeOrderResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
+      )}
+      {activeCard === CARD_IDENTIFIERS.inventory && (
         <GetStorageLocationsResults infoFromAPI={infoFromAPI} />
       )}
-      {activeCard === CARD_IDENTIFIERS.rechts && "KOMMT NOCH"}
+      {activeCard === CARD_IDENTIFIERS.invoice && "KOMMT NOCH"}
     </div>
   );
 };
