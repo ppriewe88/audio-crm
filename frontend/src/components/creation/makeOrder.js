@@ -73,7 +73,7 @@ export const makeOrderInserter = async (
   try {
     // Create FormData and append userQuestion
     const formData = new FormData();
-    formData.append("stuff", cumulativeWizardInput);
+    formData.append("wizard_inputs", JSON.stringify(cumulativeWizardInput));
 
     const response = await fetch("http://localhost:8000/insert_order", {
       method: "POST",

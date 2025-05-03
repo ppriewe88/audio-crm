@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Request
 import uvicorn
+import json
 import localrag_patrick as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 import database_access.data_retrieval as data_retrieval
@@ -175,6 +176,13 @@ async def get_storage_info(articlenumber: str = Form(...)):
     
     return {"articlenumber": articlenumber, "query_results": query_results}
 
+' ###################### endpoint to insert orders #################'
+@app.post("/insert_order")
+async def get_data(request: Request):
+    form = await request.form()
+    wizard_inputs_json = form.get("wizard_inputs")  # ein String wie '["1", "5", "5"]'
+    inputs_list = json.loads(wizard_inputs_json)  # Jetzt eine Python-Liste: ['1', '5', '5']
+    print(inputs_list)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
