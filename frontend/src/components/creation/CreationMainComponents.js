@@ -1,23 +1,34 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { SpeechRecognitionButtonCreation } from "../speech_recognition/SpeechRecognitionCreation";
+import {
+  GetStorageLocationsWizard,
+  GetStorageLocationsResults,
+} from "./getStorageLocations";
+import { MakeOrderWizard } from "./makeOrder";
 import "./creation.css";
 
 export const CARD_IDENTIFIERS = {
   links: "bestellung anlegen",
   mitte: "lagerort checken",
-  rechts: "rechts",
+  rechts: "aufgabe drei",
+  a: "aufgabe vier",
+  b: "aufgabe 5",
 };
 
 export const CARD_TITLES = {
   links: "Bestellung anlegen",
   mitte: "Lagerort checken",
-  rechts: "rechts",
+  rechts: "Aufgabe 3",
+  a: "Aufgabe 4",
+  b: "Aufgabe 4",
 };
 
 export const CreationPanel = () => {
   const [activeCard, setActiveCard] = useState(null);
   const [displayedSpeechInput, setDisplayedSpeechInput] = useState("");
-  const [sendingButtonActive, setSendingButtonActive] = useState(false);
+  const [sendingIsActive, setSendingIsActive] = useState(false);
+  const [stepCounterWizard, setStepCounterWizard] = useState(1);
+  const [cumulativeWizardInput, setCumulativeWizardInput] = useState([]);
   const [infoFromAPI, setInfoFromAPI] = useState("");
 
   const handleTranscript = (transcript) => {
@@ -34,17 +45,22 @@ export const CreationPanel = () => {
         returnMode="chunks"
         activeCard={activeCard}
         setActiveCard={setActiveCard}
-        setSendingButtonActive={setSendingButtonActive}
         setInfoFromAPI={setInfoFromAPI}
+        stepCounterWizard={stepCounterWizard}
+        setStepCounterWizard={setStepCounterWizard}
+        cumulativeWizardInput={cumulativeWizardInput}
+        setCumulativeWizardInput={setCumulativeWizardInput}
+        setSendingIsActive={setSendingIsActive}
       />
       <CreationTasks activeCard={activeCard} />
       <div className="creation-container">
         <CreationWizard
-          sendingButtonActive={sendingButtonActive}
+          sendingButtonActive={sendingIsActive}
           activeCard={activeCard}
           speechInput={displayedSpeechInput}
+          stepCounterWizard={stepCounterWizard}
         />
-        <CreationResults />
+        <CreationResults activeCard={activeCard} infoFromAPI={infoFromAPI} />
       </div>
     </>
   );
@@ -85,74 +101,38 @@ export const CreationWizard = ({
   activeCard,
   sendingButtonActive,
   speechInput,
+  stepCounterWizard,
 }) => {
   return (
     <div className="creation-control-container">
-      {activeCard === CARD_IDENTIFIERS.mitte ? (
-        <>
-          <p
-            style={{
-              marginLeft: "30px",
-              backgroundColor: sendingButtonActive ? "green" : "lightgray",
-              color: sendingButtonActive ? "white" : "black",
-              borderRadius: "5px",
-              marginRight: "25px",
-              padding: "5px",
-              fontSize: "1.6rem",
-            }}
-          >
-            Artikelnummer einsprechen - dann "Los"!
-          </p>
-          <textarea className="speech-box" value={speechInput} />
-          {/* <button>Los!</button> */}
-        </>
-      ) : (
-        "Platzhalter"
+      {activeCard === CARD_IDENTIFIERS.links && (
+        <MakeOrderWizard
+          sendingButtonActive={sendingButtonActive}
+          stepCounterWizard={stepCounterWizard}
+          speechInput={speechInput}
+        />
       )}
+      {activeCard === CARD_IDENTIFIERS.mitte && (
+        <GetStorageLocationsWizard
+          sendingButtonActive={sendingButtonActive}
+          speechInput={speechInput}
+        />
+      )}
+      {activeCard === CARD_IDENTIFIERS.rechts &&
+        "Platzhalter (Task-spezifischer Wizard)"}
+      {activeCard === null && "Wizard"}
     </div>
   );
 };
 
-export const CreationResults = ({ infoFromAPI }) => {
+export const CreationResults = ({ activeCard, infoFromAPI }) => {
   return (
     <div className="creation-results-container">
-      <StorageInfo infoFromAPI={infoFromAPI} />
-    </div>
-  );
-};
-
-export const StorageInfo = ({ infoFromAPI }) => {
-  const data = infoFromAPI;
-
-  if (!Array.isArray(data) || data.length === 0) {
-    return <div className="creation-data-table-wrapper"> {"    "} </div>;
-  }
-  console.log("inside function:", data);
-  // Alle Keys (Spaltenüberschriften) aus dem ersten Dict
-  const headers = Object.keys(data);
-
-  return (
-    <div className="creation-data-table-wrapper">
-      <div className="creation-data-table-scroll">
-        <table className="creation-data-table">
-          <thead>
-            <tr>
-              {headers.map((header) => (
-                <th key={header}>{header || "(empty)"}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, idx) => (
-              <tr key={idx}>
-                {headers.map((header) => (
-                  <td key={header}>{row[header]}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {activeCard === CARD_IDENTIFIERS.links && "KOMMT NOCH"}
+      {activeCard === CARD_IDENTIFIERS.mitte && (
+        <GetStorageLocationsResults infoFromAPI={infoFromAPI} />
+      )}
+      {activeCard === CARD_IDENTIFIERS.rechts && "KOMMT NOCH"}
     </div>
   );
 };

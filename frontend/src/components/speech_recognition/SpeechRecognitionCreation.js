@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CARD_IDENTIFIERS } from "../creation/CreationComponents";
-import { getStorageLocations } from "../creation/creationExecutors";
+import { CARD_IDENTIFIERS } from "../creation/CreationMainComponents";
+import { getStorageLocationsGetter } from "../creation/getStorageLocations";
+import { makeOrderCaching } from "../creation/makeOrder";
 
 // Check if browser supports SpeechRecognition
 const SpeechRecognition =
@@ -13,8 +14,12 @@ export const SpeechRecognitionButtonCreation = ({
   returnMode = "chunks",
   activeCard,
   setActiveCard,
-  setSendingButtonActive,
   setInfoFromAPI,
+  stepCounterWizard,
+  setStepCounterWizard,
+  cumulativeWizardInput,
+  setCumulativeWizardInput,
+  setSendingIsActive,
 }) => {
   // ######################### states and constants/variables
   // state for active/inactive button
@@ -64,10 +69,45 @@ export const SpeechRecognitionButtonCreation = ({
           return;
         }
 
-        // ########################### CONDITION: card selection
+        // ########################### CONDITION: card SELECTION "links"
         if (transcript.includes(CARD_IDENTIFIERS.links)) {
           console.log("BESTELLUNG ANLEGEN");
+          onTranscript("");
+          setInfoFromAPI("");
+          setStepCounterWizard(1);
+          setCumulativeWizardInput([]);
           setActiveCard(CARD_IDENTIFIERS.links);
+          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+          hasHandledCommandRef.current = true;
+          setSendingIsActive(false);
+          setTimeout(() => {
+            hasHandledCommandRef.current = false;
+          }, 1000); // Reset after 2 seconds
+          return;
+        }
+
+        // ############## check card specific SUBMISSION "links"
+        const submitCardInputsMakeOrder =
+          activeCard === CARD_IDENTIFIERS.links && transcript.includes("los");
+        if (submitCardInputsMakeOrder) {
+          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          const lastChunk =
+            chunkBufferRef.current[chunkBufferRef.current.length - 1];
+          makeOrderCaching(
+            lastChunk,
+            stepCounterWizard,
+            setStepCounterWizard,
+            cumulativeWizardInput,
+            setCumulativeWizardInput,
+            setSendingIsActive,
+            setInfoFromAPI
+          );
+          // clear transcript, so that text areas are emptied!
+          setSendingIsActive(false);
+          // clear transcript, so that text areas are emptied!
+          onTranscript("");
+          return; // end processing for this loop
         }
 
         // ########################### CONDITION: card selection "mitte"
@@ -75,30 +115,33 @@ export const SpeechRecognitionButtonCreation = ({
         if (transcript.includes(CARD_IDENTIFIERS.mitte)) {
           console.log("LAGERORT CHECKEN");
           onTranscript("");
+          setInfoFromAPI("");
           setActiveCard(CARD_IDENTIFIERS.mitte);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
-          setSendingButtonActive(false);
+          setSendingIsActive(false);
           setTimeout(() => {
             hasHandledCommandRef.current = false;
           }, 1000); // Reset after 2 seconds
           return;
         }
-        // ############## check card specific submission
-        const submitCardInputs =
+        // ############## check card specific submission "mitte"
+        const submitCardInputsStorageLocations =
           activeCard === CARD_IDENTIFIERS.mitte && transcript.includes("los");
-        if (submitCardInputs) {
+        if (submitCardInputsStorageLocations) {
           console.log("Befehl erkannt → Trigger onSubmit");
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
             chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          getStorageLocations(lastChunk, setInfoFromAPI);
-          return; // Beende Verarbeitung für diesen Durchlauf
+          getStorageLocationsGetter(lastChunk, setInfoFromAPI);
+          return; // end processing for this loop
         }
 
-        // ########################### CONDITION: card selection
+        // ########################### CONDITION: card selection "rechts"
         if (transcript.includes(CARD_IDENTIFIERS.rechts)) {
           console.log("RECHTS");
+          onTranscript("");
+          setInfoFromAPI("");
           setActiveCard(CARD_IDENTIFIERS.rechts);
         }
 
@@ -106,16 +149,19 @@ export const SpeechRecognitionButtonCreation = ({
         if (result.isFinal) {
           chunkBufferRef.current.push(transcript);
           console.log("chunkBuffer:", chunkBufferRef.current);
+          if (activeCard === CARD_IDENTIFIERS.links) {
+            setSendingIsActive(true);
+          }
           if (activeCard === CARD_IDENTIFIERS.mitte) {
-            setSendingButtonActive(true);
+            setSendingIsActive(true);
           }
         } else {
           cumulativeTranscript += transcript;
-          setSendingButtonActive(false);
+          setSendingIsActive(false);
         }
       }
 
-      // Optional: Live-Chunks
+      // ########################### Live-Chunks ################
       if (
         !hasHandledCommandRef.current &&
         returnMode === "chunks" &&
