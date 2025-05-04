@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CARD_IDENTIFIERS } from "../creation/CreationMainComponents";
+import { CARD_IDENTIFIERS } from "../creation/CreationCards";
 import { getStorageLocationsGetter } from "../creation/getStorageLocations";
 import { makeOrderCaching } from "../creation/makeOrder";
 

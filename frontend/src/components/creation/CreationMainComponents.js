@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { CARD_IDENTIFIERS, CARD_TITLES } from "./CreationCards";
 import { SpeechRecognitionButtonCreation } from "../speech_recognition/SpeechRecognitionCreation";
 import {
   GetStorageLocationsWizard,
@@ -7,22 +8,6 @@ import {
 import { MakeOrderWizard, MakeOrderResults } from "./makeOrder";
 import { db_dict_de } from "../../dictionaries/database_dicts";
 import "./creation.css";
-
-export const CARD_IDENTIFIERS = {
-  inventory: "bestände prüfen",
-  order: "bestellung anlegen",
-  invoice: "rechnung abschließen",
-  declined: "abgelehnt",
-  placeholder: "platzhalter",
-};
-
-export const CARD_TITLES = {
-  inventory: "Bestände prüfen",
-  order: "Bestellung anlegen",
-  invoice: "Rechnung abschließen",
-  declined: "Abgelehnte Bestellungen",
-  placeholder: "Platzhalter",
-};
 
 export const CreationPanel = () => {
   const [activeCard, setActiveCard] = useState(null);

@@ -1,10 +1,35 @@
-import torch
 import ollama
 import os
-from openai import OpenAI
 import argparse
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 from database_access.data_retrieval import establish_database_connection, make_query
+debug_imports = False
+if not debug_imports:
+    import torch
+    import openai
+else:
+    '-----------------------'
+    import sys
+    print("PYTHON EXE:", sys.executable)
+    print("SYS.PATH:", sys.path)
+    try:
+        import torch
+        print("XXXXXX TORCH VERSION:", torch.__version__)
+    except Exception as e:
+        print("EEEEEE Fehler beim Import von torch:", e)
+        raise
+    '-----------------------'
+    import sys
+    print("PYTHON EXE:", sys.executable)
+    print("SYS.PATH:", sys.path)
+    try:
+        import openai
+        from openai import OpenAI
+        print("XXXXXX OPENAI VERSION:", openai.__version__)
+    except Exception as e:
+        print("EEEEEE Fehler beim Import von openai:", e)
+        raise
+    '-----------------------'
 
 ' ######################################## systems preparation functions #######################'
 def parse_cli_input():

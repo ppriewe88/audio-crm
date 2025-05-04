@@ -1,12 +1,40 @@
 from fastapi import FastAPI, Form, Request
 import uvicorn
 import json
-import localrag_patrick as localrag
+import localrag_functions as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 import database_access.data_retrieval as data_retrieval
 import database_access.custom_queries as queries
 import requests
 from fastapi.middleware.cors import CORSMiddleware # middleware. requirement for frontend-suitable endpoint
+debug_imports = False
+if not debug_imports:
+    import torch
+    import openai
+else:
+    '-----------------------'
+    import sys
+    print("PYTHON EXE:", sys.executable)
+    print("SYS.PATH:", sys.path)
+    try:
+        import torch
+        print("XXXXXX TORCH VERSION:", torch.__version__)
+    except Exception as e:
+        print("EEEEEE Fehler beim Import von torch:", e)
+        raise
+    '-----------------------'
+    import sys
+    print("PYTHON EXE:", sys.executable)
+    print("SYS.PATH:", sys.path)
+    try:
+        import openai
+        from openai import OpenAI
+        print("XXXXXX OPENAI VERSION:", openai.__version__)
+    except Exception as e:
+        print("EEEEEE Fehler beim Import von openai:", e)
+        raise
+    '-----------------------'
+
 
 ' ############################### setting up app for API #################"'
 app = FastAPI()
@@ -28,7 +56,7 @@ async def startup_event():
     
     # configure usage
     global usage 
-    usage =  "openAI" # "openAI" or "local"
+    usage = "openAI" # "openAI" or "local"
 
     # if local usage: prepare ollama model for local testing
     if usage == "local":
@@ -38,7 +66,7 @@ async def startup_event():
         client = localrag.configure_ollama_client()
     
     # prepare system message and vault content
-    llm_active = False
+    llm_active = True
     if llm_active:
         global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
         system_message =  find_sql_query
@@ -196,4 +224,6 @@ async def get_data(request: Request):
     return {"order": query_results_order, "invoice": query_results_invoice, "pair": query_results_pair}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # my localhost adress
+    host = "127.0.0.1"
+    uvicorn.run(app, host=host, port=8000)
