@@ -53,7 +53,6 @@ export const makeOrderCaching = (
     console.log("last step reached. NOW CALLING API!");
     makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
     setStepCounterWizard(1);
-    setSendingIsActive(false);
     setCumulativeWizardInput([]);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
@@ -96,29 +95,36 @@ export const MakeOrderWizard = ({
   sendingButtonActive,
   speechInput,
   stepCounterWizard,
+  cumulativeWizardInput,
 }) => {
+  // display values for instruction steps
+  const inputSteps = ["Kunden-ID", "Produkt-ID", "Bestellmenge"];
+
   return (
     <>
       <p
+        className="creation-input"
         style={{
-          marginLeft: "30px",
           backgroundColor: sendingButtonActive ? "green" : "lightgray",
           color: sendingButtonActive ? "white" : "black",
-          borderRadius: "5px",
-          marginRight: "25px",
-          padding: "5px",
-          fontSize: "1.6rem",
         }}
       >
         {[1].includes(stepCounterWizard) &&
-          'Kundennummer einsprechen - dann "Los"!'}
+          `${inputSteps[0]} einsprechen - dann "Los"!`}
         {[1.5, 2].includes(stepCounterWizard) &&
-          'Produkt-ID einsprechen - dann "Los"!'}
+          `${inputSteps[1]} einsprechen - dann "Los"!`}
         {[2.5, 3].includes(stepCounterWizard) &&
-          'Bestellmenge einsprechen - dann "Los"!'}
+          `${inputSteps[2]} einsprechen - dann "Los"!`}
         {[3.5, 4].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
+      {cumulativeWizardInput.map((item, index) => (
+        <span className="creation-input" key={index}>
+          {inputSteps[index]}
+          {":  "}
+          {item}
+        </span>
+      ))}
     </>
   );
 };

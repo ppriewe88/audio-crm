@@ -45,6 +45,7 @@ export const CreationPanel = () => {
           activeCard={activeCard}
           speechInput={displayedSpeechInput}
           stepCounterWizard={stepCounterWizard}
+          cumulativeWizardInput={cumulativeWizardInput}
         />
         <CreationResults activeCard={activeCard} infoFromAPI={infoFromAPI} />
       </div>
@@ -88,6 +89,7 @@ export const CreationWizard = ({
   sendingButtonActive,
   speechInput,
   stepCounterWizard,
+  cumulativeWizardInput,
 }) => {
   return (
     <div className="creation-control-container">
@@ -96,6 +98,7 @@ export const CreationWizard = ({
           sendingButtonActive={sendingButtonActive}
           stepCounterWizard={stepCounterWizard}
           speechInput={speechInput}
+          cumulativeWizardInput={cumulativeWizardInput}
         />
       )}
       {activeCard === CARD_IDENTIFIERS.inventory && (

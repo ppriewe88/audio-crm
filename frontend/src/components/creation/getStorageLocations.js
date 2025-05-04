@@ -32,17 +32,16 @@ export const GetStorageLocationsWizard = ({
   sendingButtonActive,
   speechInput,
 }) => {
+  // display values for instruction steps
+  const inputSteps = ["Produkt-ID"];
+
   return (
     <>
       <p
+        className="creation-input"
         style={{
-          marginLeft: "30px",
           backgroundColor: sendingButtonActive ? "green" : "lightgray",
           color: sendingButtonActive ? "white" : "black",
-          borderRadius: "5px",
-          marginRight: "25px",
-          padding: "5px",
-          fontSize: "1.6rem",
         }}
       >
         Artikelnummer einsprechen - dann "Los"!
