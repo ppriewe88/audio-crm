@@ -1,5 +1,5 @@
 // #################### helper function #################
-export const payInvoiceCaching = (
+export const payInvoiceCaching = async (
   lastChunk,
   stepCounterWizard,
   setStepCounterWizard,
@@ -22,7 +22,8 @@ export const payInvoiceCaching = (
     return;
   }
   if (stepCounterWizard === 1.5) {
-    processInvoicePaymentStepwise(
+    // step 1.5: get order-invoice pairs (with unpaid invoices) from user
+    await processInvoicePaymentStepwise(
       cumulativeWizardInput,
       setInfoFromAPI,
       setInterimInfoApi,
@@ -42,26 +43,26 @@ export const payInvoiceCaching = (
     return;
   }
   if (stepCounterWizard === 2.5) {
+    // step 2.5: pay chosen invoice
     processInvoicePaymentStepwise(
       cumulativeWizardInput,
       setInfoFromAPI,
       setInterimInfoApi,
       stepCounterWizard
     );
-    setStepCounterWizard((s) => s + 0.5);
+    // step 1.5: update table
+    processInvoicePaymentStepwise(
+      cumulativeWizardInput,
+      setInfoFromAPI,
+      setInterimInfoApi,
+      1.5
+    );
+    setTimeout(() => {
+      setStepCounterWizard(2);
+    }, 300);
   }
   if (stepCounterWizard === 3) {
-    console.log("last step reached. NOW CALLING API!");
-    processInvoicePaymentStepwise(
-      cumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      stepCounterWizard
-    );
-    setStepCounterWizard(1);
-    setCumulativeWizardInput([]);
-    console.log("wizard step now: ", stepCounterWizard);
-    console.log("cumulative wizard input now: ", cumulativeWizardInput);
+    console.log("last step reached. CHECK COUNTING!!");
     return;
   }
 };
@@ -143,9 +144,10 @@ export const PayInvoiceWizard = ({
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (
         <span className="creation-input" key={index}>
-          {inputSteps[index]}
+          {index === 0 ? inputSteps[0] : inputSteps[1]}
           {":  "}
           {item}
+          {index === 0 ? "" : " bezahlt"}
         </span>
       ))}
     </>
@@ -215,7 +217,7 @@ export const PayInvoiceResults = ({
       {[1].includes(stepCounterWizard) && "X"}
       {[1.5, 2].includes(stepCounterWizard) && (
         <>
-          <h3>Aufträge</h3>
+          <h3>Unbezahlte Aufträge</h3>
           <div className="creation-data-table-wrapper">
             <div className="creation-data-table-scroll">
               <table className="creation-data-table">

@@ -47,15 +47,20 @@ export const makeOrderCaching = (
   }
   if (stepCounterWizard === 3.5) {
     makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
-    setStepCounterWizard((s) => s + 0.5);
+    console.log("Order was made, resetting wizard counter and emptying inputs");
+    setTimeout(() => {
+      setCumulativeWizardInput([]);
+      setStepCounterWizard(1);
+    }, 5000);
+    return;
   }
   if (stepCounterWizard === 4) {
-    console.log("last step reached. NOW CALLING API!");
+    console.log("Buffer step (debugging/security measure)");
     makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
-    setStepCounterWizard(1);
-    setCumulativeWizardInput([]);
-    console.log("wizard step now: ", stepCounterWizard);
-    console.log("cumulative wizard input now: ", cumulativeWizardInput);
+    setTimeout(() => {
+      setCumulativeWizardInput([]);
+      setStepCounterWizard(1);
+    }, 5000);
     return;
   }
 };

@@ -258,12 +258,12 @@ async def pay_invoice(request: Request):
     # create query for getting order-invoice-pairs
     query = queries.pay_invoice
     print("send query (pay invoice) to database...")
-    query_results = data_retrieval.make_query(query, connection, procedure=True, params = [inputs_list[1]])
+    query_results = data_retrieval.make_query(query, connection, procedure=True, params = [inputs_list[-1]])
     print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
     connection.close()
     print("Connection to database closed!\n")
 
-    return {"pairs": query_results}
+    return {"invoice": query_results}
 
 if __name__ == "__main__":
     # my localhost adress
