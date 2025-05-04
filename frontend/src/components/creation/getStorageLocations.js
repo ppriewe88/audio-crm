@@ -69,6 +69,7 @@ export const GetStorageLocationsResults = ({ infoFromAPI }) => {
             <tr>
               <th>Lager</th>
               <th>Bestand</th>
+              <th>Mindestbestand</th>
             </tr>
           </thead>
           <tbody>
@@ -76,6 +77,7 @@ export const GetStorageLocationsResults = ({ infoFromAPI }) => {
               <tr key={idx}>
                 <td>{row.name}</td>
                 <td>{row.stock}</td>
+                <td>{row.min_stock}</td>
               </tr>
             ))}
           </tbody>

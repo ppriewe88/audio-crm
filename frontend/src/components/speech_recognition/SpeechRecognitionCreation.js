@@ -69,7 +69,35 @@ export const SpeechRecognitionButtonCreation = ({
           return;
         }
 
-        // ########################### CONDITION: card SELECTION "links"
+        // ########################### CONDITION: card selection "inventory"
+        // ############## check card status. If switching on this card, reset the buffer
+        if (transcript.includes(CARD_IDENTIFIERS.inventory)) {
+          console.log("LAGERORT CHECKEN");
+          onTranscript("");
+          setInfoFromAPI("");
+          setActiveCard(CARD_IDENTIFIERS.inventory);
+          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+          hasHandledCommandRef.current = true;
+          setSendingIsActive(false);
+          setTimeout(() => {
+            hasHandledCommandRef.current = false;
+          }, 1000); // Reset after 2 seconds
+          return;
+        }
+        // ############## check card specific submission "inventory"
+        const submitCardInputsStorageLocations =
+          activeCard === CARD_IDENTIFIERS.inventory &&
+          transcript.includes("los");
+        if (submitCardInputsStorageLocations) {
+          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          const lastChunk =
+            chunkBufferRef.current[chunkBufferRef.current.length - 1];
+          getStorageLocationsGetter(lastChunk, setInfoFromAPI);
+          return; // end processing for this loop
+        }
+
+        // ########################### CONDITION: card SELECTION "order"
         if (transcript.includes(CARD_IDENTIFIERS.order)) {
           console.log("BESTELLUNG ANLEGEN");
           onTranscript("");
@@ -86,7 +114,7 @@ export const SpeechRecognitionButtonCreation = ({
           return;
         }
 
-        // ############## check card specific SUBMISSION "links"
+        // ############## check card specific SUBMISSION "order"
         const submitCardInputsMakeOrder =
           activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
         if (submitCardInputsMakeOrder) {
@@ -110,35 +138,7 @@ export const SpeechRecognitionButtonCreation = ({
           return; // end processing for this loop
         }
 
-        // ########################### CONDITION: card selection "mitte"
-        // ############## check card status. If switching on this card, reset the buffer
-        if (transcript.includes(CARD_IDENTIFIERS.inventory)) {
-          console.log("LAGERORT CHECKEN");
-          onTranscript("");
-          setInfoFromAPI("");
-          setActiveCard(CARD_IDENTIFIERS.inventory);
-          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-          hasHandledCommandRef.current = true;
-          setSendingIsActive(false);
-          setTimeout(() => {
-            hasHandledCommandRef.current = false;
-          }, 1000); // Reset after 2 seconds
-          return;
-        }
-        // ############## check card specific submission "mitte"
-        const submitCardInputsStorageLocations =
-          activeCard === CARD_IDENTIFIERS.inventory &&
-          transcript.includes("los");
-        if (submitCardInputsStorageLocations) {
-          console.log("Befehl erkannt → Trigger onSubmit");
-          console.log("chunkBuffer:", chunkBufferRef.current);
-          const lastChunk =
-            chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          getStorageLocationsGetter(lastChunk, setInfoFromAPI);
-          return; // end processing for this loop
-        }
-
-        // ########################### CONDITION: card selection "rechts"
+        // ########################### CONDITION: card selection "invoice"
         if (transcript.includes(CARD_IDENTIFIERS.invoice)) {
           console.log("RECHTS");
           onTranscript("");
