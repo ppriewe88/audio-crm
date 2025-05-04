@@ -4,7 +4,11 @@ import { GetStorageLocationsResults } from "./getStorageLocations";
 import { PayInvoiceResults } from "./payInvoice";
 import { db_dict_de } from "../../dictionaries/database_dicts";
 
-export const CreationResults = ({ activeCard, infoFromAPI }) => {
+export const CreationResults = ({
+  activeCard,
+  infoFromAPI,
+  stepCounterWizard,
+}) => {
   return (
     <div className="creation-results-container">
       {activeCard === CARD_IDENTIFIERS.order && (
@@ -14,7 +18,11 @@ export const CreationResults = ({ activeCard, infoFromAPI }) => {
         <GetStorageLocationsResults infoFromAPI={infoFromAPI} />
       )}
       {activeCard === CARD_IDENTIFIERS.invoice && (
-        <PayInvoiceResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
+        <PayInvoiceResults
+          infoFromAPI={infoFromAPI}
+          dict={db_dict_de}
+          stepCounterWizard={stepCounterWizard}
+        />
       )}
     </div>
   );

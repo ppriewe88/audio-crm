@@ -139,7 +139,7 @@ export const MakeOrderResults = ({ infoFromAPI, dict }) => {
     console.log("inside function:", orderData);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside storageInfo function:", orderData);
+  console.log("inside makeOrderResults function:", orderData);
 
   // creating headers for order table
   const orderHeaders = [

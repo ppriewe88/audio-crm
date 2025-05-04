@@ -43,7 +43,11 @@ export const CreationPanel = () => {
           stepCounterWizard={stepCounterWizard}
           cumulativeWizardInput={cumulativeWizardInput}
         />
-        <CreationResults activeCard={activeCard} infoFromAPI={infoFromAPI} />
+        <CreationResults
+          activeCard={activeCard}
+          infoFromAPI={infoFromAPI}
+          stepCounterWizard={stepCounterWizard}
+        />
       </div>
     </>
   );

@@ -66,7 +66,7 @@ async def startup_event():
         client = localrag.configure_ollama_client()
     
     # prepare system message and vault content
-    llm_active = True
+    llm_active = False
     if llm_active:
         global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
         system_message =  find_sql_query
@@ -189,7 +189,7 @@ async def get_storage_info(articlenumber: str = Form(...)):
 
 ' ###################### endpoint to insert orders #################'
 @app.post("/insert_order")
-async def get_data(request: Request):
+async def insert_order_get_pair(request: Request):
     # receiving request
     form = await request.form()
     # extracting data and reformatting
@@ -214,7 +214,7 @@ async def get_data(request: Request):
     query_results_invoice = data_retrieval.make_query(query, connection)
     print("Received query results:", YELLOW + str(query_results_invoice) + RESET_COLOR)
     # create query for getting corresponding order-invoice-pair back
-    query = queries.get_corresponding_pair.replace("[order_id]", str(created_order_id))
+    query = queries.get_corresponding_pair_for_order.replace("[order_id]", str(created_order_id))
     print("send query (get corresponding order-invoice-pair) to database...")
     query_results_pair = data_retrieval.make_query(query, connection)
     print("Received query results:", YELLOW + str(query_results_pair) + RESET_COLOR)
@@ -222,6 +222,48 @@ async def get_data(request: Request):
     print("Connection to database closed!\n")
 
     return {"order": query_results_order, "invoice": query_results_invoice, "pair": query_results_pair}
+
+' ###################### endpoint to get invoices orders #################'
+@app.post("/get_pairs_for_customer")
+async def get_pairs(request: Request):
+    # receiving request
+    form = await request.form()
+    # extracting data and reformatting
+    wizard_inputs_json = form.get("wizard_inputs")  # get array structure from input object (js-array)
+    inputs_list = json.loads(wizard_inputs_json)  # make python list from it
+    # connect to database and send request
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    # create query for getting order-invoice-pairs
+    query = queries.get_pair_for_customer.replace("[customer_id]", inputs_list[0])
+    print("send query (get pairs for customer) to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+
+    return {"pairs": query_results}
+
+' ###################### endpoint to get pay invoices  #################'
+@app.post("/pay_invoice")
+async def pay_invoice(request: Request):
+    # receiving request
+    form = await request.form()
+    # extracting data and reformatting
+    wizard_inputs_json = form.get("wizard_inputs")  # get array structure from input object (js-array)
+    inputs_list = json.loads(wizard_inputs_json)  # make python list from it
+    # connect to database and send request
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    # create query for getting order-invoice-pairs
+    query = queries.pay_invoice.replace("[invoice_id]", inputs_list[1])
+    print("send query (pay invoice) to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+
+    return {"pairs": query_results}
 
 if __name__ == "__main__":
     # my localhost adress

@@ -23,7 +23,19 @@ FROM invoices i
 JOIN invoices_status invs ON invs.id = i.status_id
 WHERE i.order_id = [order_id]"""
 
-get_corresponding_pair = """
+get_corresponding_pair_for_order = """
 SELECT * 
 FROM vw_0Aufträge
 WHERE Bestell_ID = [order_id]"""
+
+get_pair_for_customer = """
+SELECT a.Bestellstatus, a.Auftragseingang, a.Kunden_ID, a.Produkt_ID, a.Bestellmenge, a.Rechnungs_ID, a.Umsatz, a.rabattierter_Umsatz, a.Mahngebühr, a.Zahlungsfrist, a.Zahltag, a.Rechnungsstatus, a.Status_Auftrag, p.name as produkt_name
+FROM vw_0Aufträge a
+JOIN products p ON a.Produkt_id = p.id
+WHERE Kunden_ID = [customer_id] AND (Rechnungsstatus = 'id = 1 , unpaid' OR Rechnungsstatus = 'id = 3 , overdue')
+"""
+
+pay_invoice = """
+EXEC spChangeInvoiceStatusAndCheckDiscount
+@invoiceID		= [incoive_id],
+@newStatusID	= 2"""

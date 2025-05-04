@@ -20,7 +20,7 @@ export const db_dict_de = {
   overdue_fee: "Mahngebühr",
   order_id: "Order-ID",
   status_id: "Status-ID",
-  description: "Beschr.",
+  description: "Prod.beschr.",
   category_id: "Warengr.-ID",
   purchase_price: "EK",
   sale_price: "VK",
@@ -30,4 +30,5 @@ export const db_dict_de = {
   quantity: "Menge",
   invoice_id: "Rechnungs-ID",
   status_name: "Status",
+  product_name: "Produktname",
 };
