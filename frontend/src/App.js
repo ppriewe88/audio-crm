@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChatbotQuestioning } from "./components/retrieval/ChatbotQuestioning";
 import { ChatbotResponse } from "./components/retrieval/ChatbotResponse";
-import { CreationPanel } from "./components/creation/CreationMainComponents";
+import { CreationPanel } from "./components/creation/CreationPanel";
 
 // ########################################################### App
 export default function App() {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CARD_IDENTIFIERS } from "../creation/CreationCards";
 import { getStorageLocationsGetter } from "../creation/getStorageLocations";
 import { makeOrderCaching } from "../creation/makeOrder";
+import { payInvoiceCaching } from "../creation/payInvoice";
 
 // Check if browser supports SpeechRecognition
 const SpeechRecognition =
@@ -143,7 +144,40 @@ export const SpeechRecognitionButtonCreation = ({
           console.log("RECHTS");
           onTranscript("");
           setInfoFromAPI("");
+          setStepCounterWizard(1);
+          setCumulativeWizardInput([]);
           setActiveCard(CARD_IDENTIFIERS.invoice);
+          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+          hasHandledCommandRef.current = true;
+          setSendingIsActive(false);
+          setTimeout(() => {
+            hasHandledCommandRef.current = false;
+          }, 1000); // Reset after 2 seconds
+          return;
+        }
+
+        // ############## check card specific SUBMISSION "invoice"
+        const submitCardInputsPayInvoice =
+          activeCard === CARD_IDENTIFIERS.invoice && transcript.includes("los");
+        if (submitCardInputsPayInvoice) {
+          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          const lastChunk =
+            chunkBufferRef.current[chunkBufferRef.current.length - 1];
+          payInvoiceCaching(
+            lastChunk,
+            stepCounterWizard,
+            setStepCounterWizard,
+            cumulativeWizardInput,
+            setCumulativeWizardInput,
+            setSendingIsActive,
+            setInfoFromAPI
+          );
+          // clear transcript, so that text areas are emptied!
+          setSendingIsActive(false);
+          // clear transcript, so that text areas are emptied!
+          onTranscript("");
+          return; // end processing for this loop
         }
 
         // ########################### CONDITION: final transcript (pause/sentence ending)
@@ -154,6 +188,9 @@ export const SpeechRecognitionButtonCreation = ({
             setSendingIsActive(true);
           }
           if (activeCard === CARD_IDENTIFIERS.inventory) {
+            setSendingIsActive(true);
+          }
+          if (activeCard === CARD_IDENTIFIERS.invoice) {
             setSendingIsActive(true);
           }
         } else {
