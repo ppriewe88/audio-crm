@@ -256,9 +256,9 @@ async def pay_invoice(request: Request):
     print("\nconnecting to database")
     connection = data_retrieval.establish_database_connection()
     # create query for getting order-invoice-pairs
-    query = queries.pay_invoice.replace("[invoice_id]", inputs_list[1])
+    query = queries.pay_invoice
     print("send query (pay invoice) to database...")
-    query_results = data_retrieval.make_query(query, connection)
+    query_results = data_retrieval.make_query(query, connection, procedure=True, params = [inputs_list[1]])
     print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
     connection.close()
     print("Connection to database closed!\n")

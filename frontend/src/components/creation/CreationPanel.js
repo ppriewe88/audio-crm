@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { CreationTasks } from "./CreationTasks";
 import { CreationWizard } from "./CreationWizard";
 import { CreationResults } from "./CreationResults";
@@ -12,6 +12,7 @@ export const CreationPanel = () => {
   const [stepCounterWizard, setStepCounterWizard] = useState(1);
   const [cumulativeWizardInput, setCumulativeWizardInput] = useState([]);
   const [infoFromAPI, setInfoFromAPI] = useState("");
+  const [interimInfoFromAPI, setInterimInfoApi] = useState([]);
 
   const handleTranscript = (transcript) => {
     console.log("received transcript (handler):", transcript);
@@ -28,6 +29,7 @@ export const CreationPanel = () => {
         activeCard={activeCard}
         setActiveCard={setActiveCard}
         setInfoFromAPI={setInfoFromAPI}
+        setInterimInfoApi={setInterimInfoApi}
         stepCounterWizard={stepCounterWizard}
         setStepCounterWizard={setStepCounterWizard}
         cumulativeWizardInput={cumulativeWizardInput}
@@ -47,6 +49,7 @@ export const CreationPanel = () => {
           activeCard={activeCard}
           infoFromAPI={infoFromAPI}
           stepCounterWizard={stepCounterWizard}
+          interimInfoFromAPI={interimInfoFromAPI}
         />
       </div>
     </>

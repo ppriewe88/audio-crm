@@ -16,6 +16,7 @@ export const SpeechRecognitionButtonCreation = ({
   activeCard,
   setActiveCard,
   setInfoFromAPI,
+  setInterimInfoApi,
   stepCounterWizard,
   setStepCounterWizard,
   cumulativeWizardInput,
@@ -144,6 +145,7 @@ export const SpeechRecognitionButtonCreation = ({
           console.log("RECHTS");
           onTranscript("");
           setInfoFromAPI("");
+          setInterimInfoApi("");
           setStepCounterWizard(1);
           setCumulativeWizardInput([]);
           setActiveCard(CARD_IDENTIFIERS.invoice);
@@ -171,7 +173,8 @@ export const SpeechRecognitionButtonCreation = ({
             cumulativeWizardInput,
             setCumulativeWizardInput,
             setSendingIsActive,
-            setInfoFromAPI
+            setInfoFromAPI,
+            setInterimInfoApi
           );
           // clear transcript, so that text areas are emptied!
           setSendingIsActive(false);

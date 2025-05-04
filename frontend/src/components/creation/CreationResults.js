@@ -8,6 +8,7 @@ export const CreationResults = ({
   activeCard,
   infoFromAPI,
   stepCounterWizard,
+  interimInfoFromAPI,
 }) => {
   return (
     <div className="creation-results-container">
@@ -19,6 +20,7 @@ export const CreationResults = ({
       )}
       {activeCard === CARD_IDENTIFIERS.invoice && (
         <PayInvoiceResults
+          interimInfoFromAPI={interimInfoFromAPI}
           infoFromAPI={infoFromAPI}
           dict={db_dict_de}
           stepCounterWizard={stepCounterWizard}

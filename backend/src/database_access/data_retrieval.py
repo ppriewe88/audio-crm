@@ -18,14 +18,21 @@ def establish_database_connection():
         print("Connection error: ", e)
     return connection
 
-' ################### simple select queries ################'
-def make_query(input_query, connection):
+' ################### function to exec queries/procedures ################'
+def make_query(input_query, connection, procedure = False, params=None):
     try:
-        # set cursor and execute query
+        # set cursor
         cursor = connection.cursor()
-        cursor.execute(input_query)
+        # call procedure with params (or no params) or execute raw query
+        if procedure:
+            if params:
+                cursor.execute(input_query, *params)
+            else:
+                cursor.execute(input_query)
+        else: 
+            cursor.execute(input_query)
 
-        # if query is reading, cursor.description is nor None
+        # if query is reading, cursor.description is not None
         if cursor.description:
             # extract column names of retrieved results
             column_names = [column[0] for column in cursor.description]

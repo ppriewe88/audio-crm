@@ -6,7 +6,8 @@ export const payInvoiceCaching = (
   cumulativeWizardInput,
   setCumulativeWizardInput,
   setSendingIsActive,
-  setInfoFromAPI
+  setInfoFromAPI,
+  setInterimInfoApi
 ) => {
   // control log
   console.log("entered paying invoice with current step ", stepCounterWizard);
@@ -24,13 +25,14 @@ export const payInvoiceCaching = (
     processInvoicePaymentStepwise(
       cumulativeWizardInput,
       setInfoFromAPI,
+      setInterimInfoApi,
       stepCounterWizard
     );
     setStepCounterWizard((s) => s + 0.5);
   }
   if (stepCounterWizard === 2) {
     //   append lastChunk (speech input) to array of inputs
-    setCumulativeWizardInput((current) => [lastChunk]);
+    setCumulativeWizardInput((current) => [...current, lastChunk]);
     console.log(cumulativeWizardInput);
     // increase step counter during makeOrder Wizard
     setStepCounterWizard((s) => s + 0.5);
@@ -40,11 +42,12 @@ export const payInvoiceCaching = (
     return;
   }
   if (stepCounterWizard === 2.5) {
-    // processInvoicePaymentStepwise(
-    //   cumulativeWizardInput,
-    //   setInfoFromAPI,
-    //   stepCounterWizard
-    // );
+    processInvoicePaymentStepwise(
+      cumulativeWizardInput,
+      setInfoFromAPI,
+      setInterimInfoApi,
+      stepCounterWizard
+    );
     setStepCounterWizard((s) => s + 0.5);
   }
   if (stepCounterWizard === 3) {
@@ -52,10 +55,11 @@ export const payInvoiceCaching = (
     processInvoicePaymentStepwise(
       cumulativeWizardInput,
       setInfoFromAPI,
+      setInterimInfoApi,
       stepCounterWizard
     );
     setStepCounterWizard(1);
-    // setCumulativeWizardInput([]);
+    setCumulativeWizardInput([]);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
@@ -66,18 +70,20 @@ export const payInvoiceCaching = (
 export const processInvoicePaymentStepwise = async (
   cumulativeWizardInput,
   setInfoFromAPI,
+  setInterimInfoApi,
   stepCounterWizard
 ) => {
   // control print
   console.log("entering");
   console.log("Now processing: ", cumulativeWizardInput);
-  console.log("now at step: ", stepCounterWizard);
   // depenging on step, choose different endpoints
   let endpoint = "";
   if (stepCounterWizard === 1.5) {
     endpoint = "http://localhost:8000/get_pairs_for_customer";
-  } else if (stepCounterWizard === 2) {
+    console.log("now at step: ", stepCounterWizard);
+  } else if ([2.5, 3].includes(stepCounterWizard)) {
     endpoint = "http://localhost:8000/pay_invoice";
+    console.log("now at step: ", stepCounterWizard);
   }
 
   console.log(endpoint);
@@ -96,7 +102,13 @@ export const processInvoicePaymentStepwise = async (
     }
 
     const result = await response.json();
-    setInfoFromAPI(result);
+    if (stepCounterWizard === 1.5) {
+      setInterimInfoApi(result);
+      // setInfoFromAPI(result);
+      //interimInfoFromAPI.current.push(result);
+    } else if (stepCounterWizard === 2.5) {
+      setInfoFromAPI(result);
+    }
     console.log("Response from server:", result);
   } catch (error) {
     console.error("Error:", error);
@@ -126,7 +138,7 @@ export const PayInvoiceWizard = ({
           `${inputSteps[0]} einsprechen - dann "Los"!`}
         {[1.5, 2].includes(stepCounterWizard) &&
           `${inputSteps[1]} einsprechen - dann "Los"!`}
-        {[2.5, 3].includes(stepCounterWizard) && "Daten abgesendet!"}
+        {[2.5, 3, 3.5].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (
@@ -141,9 +153,22 @@ export const PayInvoiceWizard = ({
 };
 
 // #################### display for results #########
-export const PayInvoiceResults = ({ infoFromAPI, dict, stepCounterWizard }) => {
-  const invoiceData = infoFromAPI?.invoice;
-  const pairData = infoFromAPI?.pairs;
+export const PayInvoiceResults = ({
+  infoFromAPI,
+  interimInfoFromAPI,
+  dict,
+  stepCounterWizard,
+}) => {
+  let pairData;
+  let invoiceData;
+  if ([1.5, 2].includes(stepCounterWizard)) {
+    invoiceData = interimInfoFromAPI?.invoice;
+    pairData = interimInfoFromAPI?.pairs;
+  } else if ([2.5, 3].includes(stepCounterWizard)) {
+    invoiceData = infoFromAPI?.invoice;
+    pairData = infoFromAPI?.pairs;
+  }
+
   // console.log("DATA:  ", orderData);
   if (!Array.isArray(pairData) || pairData.length === 0) {
     console.log("inside function:", pairData);

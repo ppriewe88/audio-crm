@@ -36,6 +36,4 @@ WHERE Kunden_ID = [customer_id] AND (Rechnungsstatus = 'id = 1 , unpaid' OR Rech
 """
 
 pay_invoice = """
-EXEC spChangeInvoiceStatusAndCheckDiscount
-@invoiceID		= [incoive_id],
-@newStatusID	= 2"""
+EXEC spChangeInvoiceStatusAndCheckDiscount @invoiceID = ?, @newStatusID = 2"""
