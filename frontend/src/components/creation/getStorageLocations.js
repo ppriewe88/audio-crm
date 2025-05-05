@@ -32,9 +32,6 @@ export const GetStorageLocationsWizard = ({
   sendingButtonActive,
   speechInput,
 }) => {
-  // display values for instruction steps
-  const inputSteps = ["Produkt-ID"];
-
   return (
     <>
       <p
@@ -44,7 +41,7 @@ export const GetStorageLocationsWizard = ({
           color: sendingButtonActive ? "white" : "black",
         }}
       >
-        Artikelnummer einsprechen - dann "Los"!
+        Produkt-ID einsprechen - dann "Los"!
       </p>
       <textarea className="speech-box" value={speechInput} />
     </>

@@ -19,8 +19,8 @@ export default function App() {
             <>
               <h1>Smart Data Retriever!</h1>
               <p style={{ textAlign: "center", fontSize: "2.4rem" }}>
-                It's RAG-time, baby! Frage die KI nach Daten,
-                Retrieval-Augmented Generation ist der Schlüssel!
+                It's RAG-time! Frage die KI nach Daten, Retrieval-Augmented
+                Generation ist der Schlüssel!
               </p>
               <div className="chatbot-container">
                 {/* pass parental state as prop to children! */}

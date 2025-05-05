@@ -3,6 +3,7 @@ import { CARD_IDENTIFIERS } from "../creation/CreationCards";
 import { getStorageLocationsGetter } from "../creation/getStorageLocations";
 import { makeOrderCaching } from "../creation/makeOrder";
 import { payInvoiceCaching } from "../creation/payInvoice";
+import { requestRevenues, revenuesCaching } from "../creation/revenues";
 
 // Check if browser supports SpeechRecognition
 const SpeechRecognition =
@@ -77,6 +78,8 @@ export const SpeechRecognitionButtonCreation = ({
           console.log("LAGERORT CHECKEN");
           onTranscript("");
           setInfoFromAPI("");
+          setStepCounterWizard(1);
+          setCumulativeWizardInput([]);
           setActiveCard(CARD_IDENTIFIERS.inventory);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
@@ -184,14 +187,20 @@ export const SpeechRecognitionButtonCreation = ({
           return; // end processing for this loop
         }
 
-        // ########################### CONDITION: card SELECTION "order"
+        // ########################### CONDITION: card SELECTION "revenue"
         if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
           console.log("BESTELLUNG ANLEGEN");
           onTranscript("");
           setInfoFromAPI("");
           setStepCounterWizard(1);
           setCumulativeWizardInput([]);
-          setActiveCard(CARD_IDENTIFIERS.order);
+          setActiveCard(CARD_IDENTIFIERS.revenue);
+          revenuesCaching(
+            setInfoFromAPI,
+            cumulativeWizardInput,
+            stepCounterWizard,
+            setStepCounterWizard
+          );
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);
@@ -199,31 +208,6 @@ export const SpeechRecognitionButtonCreation = ({
             hasHandledCommandRef.current = false;
           }, 1000); // Reset after 2 seconds
           return;
-        }
-
-        // ############## check card specific SUBMISSION "order"
-        const submitCardInputsRevenues =
-          activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
-        if (submitCardInputsRevenues) {
-          console.log("Befehl erkannt → Trigger onSubmit");
-          console.log("chunkBuffer:", chunkBufferRef.current);
-          const lastChunk =
-            chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          makeOrderCaching(
-            lastChunk,
-            stepCounterWizard,
-            setStepCounterWizard,
-            cumulativeWizardInput,
-            setCumulativeWizardInput,
-            setSendingIsActive,
-            setInfoFromAPI
-            // setInterimInfoApi
-          );
-          // clear transcript, so that text areas are emptied!
-          setSendingIsActive(false);
-          // clear transcript, so that text areas are emptied!
-          onTranscript("");
-          return; // end processing for this loop
         }
 
         // ########################### CONDITION: final transcript (pause/sentence ending)

@@ -43,3 +43,7 @@ SELECT p.id AS Produkt_ID, p.name AS Produktname, p.sale_price AS Preis, p.descr
 FROM products p
 JOIN inventory i ON i.product_id=p.id
 JOIN inventory_storagelocations invsl ON invsl.id = i.storage_location_id """
+
+show_revenues = """
+SELECT *
+FROM vw_4BasisFürUmsatzanalysen"""

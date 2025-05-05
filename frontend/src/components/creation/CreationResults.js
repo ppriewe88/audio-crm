@@ -2,6 +2,7 @@ import { CARD_IDENTIFIERS } from "./CreationCards";
 import { MakeOrderProductResults, MakeOrderResults } from "./makeOrder";
 import { GetStorageLocationsResults } from "./getStorageLocations";
 import { PayInvoiceResults } from "./payInvoice";
+import { RevenuesResults } from "./revenues";
 import { db_dict_de } from "../../dictionaries/database_dicts";
 
 export const CreationResults = ({
@@ -19,19 +20,12 @@ export const CreationResults = ({
         <>
           {[1.5, 2, 2.5, 3].includes(stepCounterWizard) && (
             <MakeOrderProductResults
-              // interimInfoFromAPI={interimInfoFromAPI}
               infoFromAPI={infoFromAPI}
               dict={db_dict_de}
-              // stepCounterWizard={stepCounterWizard}
             />
           )}
           {[3.5, 4].includes(stepCounterWizard) && (
-            <MakeOrderResults
-              // interimInfoFromAPI={interimInfoFromAPI}
-              infoFromAPI={infoFromAPI}
-              dict={db_dict_de}
-              // stepCounterWizard={stepCounterWizard}
-            />
+            <MakeOrderResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
           )}
         </>
       )}
@@ -42,6 +36,9 @@ export const CreationResults = ({
           dict={db_dict_de}
           stepCounterWizard={stepCounterWizard}
         />
+      )}
+      {activeCard === CARD_IDENTIFIERS.revenue && (
+        <RevenuesResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
       )}
     </div>
   );
