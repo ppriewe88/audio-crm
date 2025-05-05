@@ -12,11 +12,16 @@ export const CreationResults = ({
 }) => {
   return (
     <div className="creation-results-container">
-      {activeCard === CARD_IDENTIFIERS.order && (
-        <MakeOrderResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
-      )}
       {activeCard === CARD_IDENTIFIERS.inventory && (
         <GetStorageLocationsResults infoFromAPI={infoFromAPI} />
+      )}
+      {activeCard === CARD_IDENTIFIERS.order && (
+        <MakeOrderResults
+          // interimInfoFromAPI={interimInfoFromAPI}
+          infoFromAPI={infoFromAPI}
+          dict={db_dict_de}
+          // stepCounterWizard={stepCounterWizard}
+        />
       )}
       {activeCard === CARD_IDENTIFIERS.invoice && (
         <PayInvoiceResults

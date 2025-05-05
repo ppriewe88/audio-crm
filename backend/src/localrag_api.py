@@ -265,6 +265,27 @@ async def pay_invoice(request: Request):
 
     return {"invoice": query_results}
 
+' ###################### endpoint to get products #################'
+@app.post("/show_products")
+async def get_pairs(request: Request):
+    # receiving request
+    form = await request.form()
+    # extracting data and reformatting
+    wizard_inputs_json = form.get("wizard_inputs")  # get array structure from input object (js-array)
+    inputs_list = json.loads(wizard_inputs_json)  # make python list from it
+    # connect to database and send request
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    # create query for getting order-invoice-pairs
+    query = queries.show_products
+    print("send query (get products) to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+
+    return {"products": query_results}
+
 if __name__ == "__main__":
     # my localhost adress
     host = "127.0.0.1"

@@ -90,7 +90,7 @@ export const processInvoicePaymentStepwise = async (
   console.log(endpoint);
   // ################## API call
   try {
-    // Create FormData and append userQuestion
+    // Create FormData and append input
     const formData = new FormData();
     formData.append("wizard_inputs", JSON.stringify(cumulativeWizardInput));
 
@@ -105,11 +105,10 @@ export const processInvoicePaymentStepwise = async (
     const result = await response.json();
     if (stepCounterWizard === 1.5) {
       setInterimInfoApi(result);
-      // setInfoFromAPI(result);
-      //interimInfoFromAPI.current.push(result);
     } else if (stepCounterWizard === 2.5) {
       setInfoFromAPI(result);
     }
+
     console.log("Response from server:", result);
   } catch (error) {
     console.error("Error:", error);
@@ -161,15 +160,7 @@ export const PayInvoiceResults = ({
   dict,
   stepCounterWizard,
 }) => {
-  let pairData;
-  let invoiceData;
-  if ([1.5, 2].includes(stepCounterWizard)) {
-    invoiceData = interimInfoFromAPI?.invoice;
-    pairData = interimInfoFromAPI?.pairs;
-  } else if ([2.5, 3].includes(stepCounterWizard)) {
-    invoiceData = infoFromAPI?.invoice;
-    pairData = infoFromAPI?.pairs;
-  }
+  const pairData = interimInfoFromAPI?.pairs;
 
   // console.log("DATA:  ", orderData);
   if (!Array.isArray(pairData) || pairData.length === 0) {
@@ -178,26 +169,6 @@ export const PayInvoiceResults = ({
   }
   console.log("inside PayInvoiceResults function:", pairData);
 
-  // creating headers for order table
-  const orderHeaders = [
-    "order_id",
-    "customer_id",
-    "product_id",
-    "quantity",
-    "status",
-  ];
-  // creating headers for invoice table
-  const invoiceHeaders = [
-    "id",
-    "order_id",
-    "total_price",
-    "total_discount",
-    "total_price_discounted",
-    "due_limit",
-    "Zahltag",
-    "overdue_fee",
-    "status",
-  ];
   // creating headers for order-invoice-pair table
   const pairHeaders = [
     "Status_Auftrag",
@@ -218,88 +189,6 @@ export const PayInvoiceResults = ({
       {[1.5, 2].includes(stepCounterWizard) && (
         <>
           <h3>Unbezahlte Aufträge</h3>
-          <div className="creation-data-table-wrapper">
-            <div className="creation-data-table-scroll">
-              <table className="creation-data-table">
-                <thead>
-                  <tr>
-                    {pairHeaders.map((header) => (
-                      <th key={header}>
-                        {" "}
-                        {dict[header] || header || "(empty)"}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {pairData.map((row, idx) => (
-                    <tr key={idx}>
-                      {pairHeaders.map((header) => (
-                        <td key={header}>{row[header]}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
-      )}
-      {[2.5, 3].includes(stepCounterWizard) && (
-        <>
-          <h3>Bestellung</h3>
-          <div className="creation-data-table-wrapper">
-            <div className="creation-data-table-scroll">
-              <table className="creation-data-table">
-                <thead>
-                  <tr>
-                    {orderHeaders.map((header) => (
-                      <th key={header}>
-                        {" "}
-                        {dict[header] || header || "(empty)"}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {pairData.map((row, idx) => (
-                    <tr key={idx}>
-                      {orderHeaders.map((header) => (
-                        <td key={header}>{row[header]}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <h3>Rechnung</h3>
-          <div className="creation-data-table-wrapper">
-            <div className="creation-data-table-scroll">
-              <table className="creation-data-table">
-                <thead>
-                  <tr>
-                    {invoiceHeaders.map((header) => (
-                      <th key={header}>
-                        {" "}
-                        {dict[header] || header || "(empty)"}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoiceData.map((row, idx) => (
-                    <tr key={idx}>
-                      {invoiceHeaders.map((header) => (
-                        <td key={header}>{row[header]}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <h3>Auftrag</h3>
           <div className="creation-data-table-wrapper">
             <div className="creation-data-table-scroll">
               <table className="creation-data-table">

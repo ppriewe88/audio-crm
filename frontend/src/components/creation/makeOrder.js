@@ -7,6 +7,7 @@ export const makeOrderCaching = (
   setCumulativeWizardInput,
   setSendingIsActive,
   setInfoFromAPI
+  // setInterimInfoApi
 ) => {
   // control log
   console.log("entered making order with current step ", stepCounterWizard);
@@ -21,6 +22,12 @@ export const makeOrderCaching = (
     return;
   }
   if (stepCounterWizard === 1.5) {
+    processMakeOrderStepwise(
+      cumulativeWizardInput,
+      setInfoFromAPI,
+      // setInterimInfoApi,
+      stepCounterWizard
+    );
     setStepCounterWizard((s) => s + 0.5);
   }
   if (stepCounterWizard === 2) {
@@ -46,17 +53,26 @@ export const makeOrderCaching = (
     return;
   }
   if (stepCounterWizard === 3.5) {
-    makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
+    processMakeOrderStepwise(
+      cumulativeWizardInput,
+      setInfoFromAPI,
+      // setInterimInfoApi,
+      stepCounterWizard
+    );
     console.log("Order was made, resetting wizard counter and emptying inputs");
-    setTimeout(() => {
-      setCumulativeWizardInput([]);
-      setStepCounterWizard(1);
-    }, 5000);
+    // setTimeout(() => {
+    //   setCumulativeWizardInput([]);
+    // }, 5000);
     return;
   }
   if (stepCounterWizard === 4) {
     console.log("Buffer step (debugging/security measure)");
-    makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
+    processMakeOrderStepwise(
+      cumulativeWizardInput,
+      setInfoFromAPI,
+      // setInterimInfoApi,
+      stepCounterWizard
+    );
     setTimeout(() => {
       setCumulativeWizardInput([]);
       setStepCounterWizard(1);
@@ -66,20 +82,31 @@ export const makeOrderCaching = (
 };
 
 // #################### function to make API call ####
-export const makeOrderInserter = async (
+export const processMakeOrderStepwise = async (
   cumulativeWizardInput,
-  setInfoFromAPI
+  setInfoFromAPI,
+  // setInterimInfoApi,
+  stepCounterWizard
 ) => {
   // control print
   console.log("Now processing: ", cumulativeWizardInput);
+  // depenging on step, choose different endpoints
+  let endpoint = "";
+  if (stepCounterWizard === 1.5) {
+    endpoint = "http://localhost:8000/show_products";
+    console.log("now at step: ", stepCounterWizard);
+  } else if ([3.5, 4].includes(stepCounterWizard)) {
+    endpoint = "http://localhost:8000/insert_order";
+    console.log("now at step: ", stepCounterWizard);
+  }
 
   // ################## API call
   try {
-    // Create FormData and append userQuestion
+    // Create FormData and append input
     const formData = new FormData();
     formData.append("wizard_inputs", JSON.stringify(cumulativeWizardInput));
 
-    const response = await fetch("http://localhost:8000/insert_order", {
+    const response = await fetch(endpoint, {
       method: "POST",
       body: formData,
     });
@@ -88,7 +115,13 @@ export const makeOrderInserter = async (
     }
 
     const result = await response.json();
-    setInfoFromAPI(result);
+    if (stepCounterWizard === 1.5) {
+      setInfoFromAPI(result);
+      // setInterimInfoApi(result);
+    } else if (stepCounterWizard === 3.5) {
+      setInfoFromAPI(result);
+    }
+
     console.log("Response from server:", result);
   } catch (error) {
     console.error("Error:", error);
@@ -136,16 +169,26 @@ export const MakeOrderWizard = ({
 
 // #################### display for results #########
 export const MakeOrderResults = ({ infoFromAPI, dict }) => {
+  // const productData = interimInfoFromAPI?.products;
   const orderData = infoFromAPI?.order;
   const invoiceData = infoFromAPI?.invoice;
-  const pairData = infoFromAPI?.pair;
+  const pairData = infoFromAPI?.pairs;
   console.log("DATA:  ", orderData);
   if (!Array.isArray(orderData) || orderData.length === 0) {
     console.log("inside function:", orderData);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside makeOrderResults function:", orderData);
+  // console.log("inside makeOrderResults function:", productData);
 
+  // creating headers for order table
+  const productHeaders = [
+    "Produkt_ID",
+    "Produktname",
+    "Preis",
+    "description",
+    "Bestand",
+    "Mindestbestand",
+  ];
   // creating headers for order table
   const orderHeaders = [
     "order_id",
@@ -185,75 +228,103 @@ export const MakeOrderResults = ({ infoFromAPI, dict }) => {
   ];
   return (
     <>
-      <h3>Bestellung</h3>
-      <div className="creation-data-table-wrapper">
-        <div className="creation-data-table-scroll">
-          <table className="creation-data-table">
-            <thead>
-              <tr>
-                {orderHeaders.map((header) => (
-                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+      {/* {stepCounterWizard === 2 && (
+        <div className="creation-data-table-wrapper">
+          <div className="creation-data-table-scroll">
+            <table className="creation-data-table">
+              <thead>
+                <tr>
+                  {productHeaders.map((header) => (
+                    <th key={header}> {dict[header] || header || "(empty)"}</th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {productData.map((row, idx) => (
+                  <tr key={idx}>
+                    {productHeaders.map((header) => (
+                      <td key={header}>{row[header]}</td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orderData.map((row, idx) => (
-                <tr key={idx}>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )} */}
+      <>
+        {" "}
+        <h3>Bestellung</h3>
+        <div className="creation-data-table-wrapper">
+          <div className="creation-data-table-scroll">
+            <table className="creation-data-table">
+              <thead>
+                <tr>
                   {orderHeaders.map((header) => (
-                    <td key={header}>{row[header]}</td>
+                    <th key={header}> {dict[header] || header || "(empty)"}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <h3>Rechnung</h3>
-      <div className="creation-data-table-wrapper">
-        <div className="creation-data-table-scroll">
-          <table className="creation-data-table">
-            <thead>
-              <tr>
-                {invoiceHeaders.map((header) => (
-                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+              </thead>
+              <tbody>
+                {orderData.map((row, idx) => (
+                  <tr key={idx}>
+                    {orderHeaders.map((header) => (
+                      <td key={header}>{row[header]}</td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {invoiceData.map((row, idx) => (
-                <tr key={idx}>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <h3>Rechnung</h3>
+        <div className="creation-data-table-wrapper">
+          <div className="creation-data-table-scroll">
+            <table className="creation-data-table">
+              <thead>
+                <tr>
                   {invoiceHeaders.map((header) => (
-                    <td key={header}>{row[header]}</td>
+                    <th key={header}> {dict[header] || header || "(empty)"}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <h3>Auftrag</h3>
-      <div className="creation-data-table-wrapper">
-        <div className="creation-data-table-scroll">
-          <table className="creation-data-table">
-            <thead>
-              <tr>
-                {pairHeaders.map((header) => (
-                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+              </thead>
+              <tbody>
+                {invoiceData.map((row, idx) => (
+                  <tr key={idx}>
+                    {invoiceHeaders.map((header) => (
+                      <td key={header}>{row[header]}</td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pairData.map((row, idx) => (
-                <tr key={idx}>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <h3>Auftrag</h3>
+        <div className="creation-data-table-wrapper">
+          <div className="creation-data-table-scroll">
+            <table className="creation-data-table">
+              <thead>
+                <tr>
                   {pairHeaders.map((header) => (
-                    <td key={header}>{row[header]}</td>
+                    <th key={header}> {dict[header] || header || "(empty)"}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pairData.map((row, idx) => (
+                  <tr key={idx}>
+                    {pairHeaders.map((header) => (
+                      <td key={header}>{row[header]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </>
     </>
   );
 };

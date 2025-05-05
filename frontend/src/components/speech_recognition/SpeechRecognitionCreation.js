@@ -132,6 +132,7 @@ export const SpeechRecognitionButtonCreation = ({
             setCumulativeWizardInput,
             setSendingIsActive,
             setInfoFromAPI
+            // setInterimInfoApi
           );
           // clear transcript, so that text areas are emptied!
           setSendingIsActive(false);
