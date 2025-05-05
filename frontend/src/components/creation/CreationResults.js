@@ -1,5 +1,5 @@
 import { CARD_IDENTIFIERS } from "./CreationCards";
-import { MakeOrderResults } from "./makeOrder";
+import { MakeOrderProductResults, MakeOrderResults } from "./makeOrder";
 import { GetStorageLocationsResults } from "./getStorageLocations";
 import { PayInvoiceResults } from "./payInvoice";
 import { db_dict_de } from "../../dictionaries/database_dicts";
@@ -16,12 +16,24 @@ export const CreationResults = ({
         <GetStorageLocationsResults infoFromAPI={infoFromAPI} />
       )}
       {activeCard === CARD_IDENTIFIERS.order && (
-        <MakeOrderResults
-          // interimInfoFromAPI={interimInfoFromAPI}
-          infoFromAPI={infoFromAPI}
-          dict={db_dict_de}
-          // stepCounterWizard={stepCounterWizard}
-        />
+        <>
+          {[1.5, 2, 2.5, 3].includes(stepCounterWizard) && (
+            <MakeOrderProductResults
+              // interimInfoFromAPI={interimInfoFromAPI}
+              infoFromAPI={infoFromAPI}
+              dict={db_dict_de}
+              // stepCounterWizard={stepCounterWizard}
+            />
+          )}
+          {[3.5, 4].includes(stepCounterWizard) && (
+            <MakeOrderResults
+              // interimInfoFromAPI={interimInfoFromAPI}
+              infoFromAPI={infoFromAPI}
+              dict={db_dict_de}
+              // stepCounterWizard={stepCounterWizard}
+            />
+          )}
+        </>
       )}
       {activeCard === CARD_IDENTIFIERS.invoice && (
         <PayInvoiceResults

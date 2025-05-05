@@ -184,6 +184,48 @@ export const SpeechRecognitionButtonCreation = ({
           return; // end processing for this loop
         }
 
+        // ########################### CONDITION: card SELECTION "order"
+        if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
+          console.log("BESTELLUNG ANLEGEN");
+          onTranscript("");
+          setInfoFromAPI("");
+          setStepCounterWizard(1);
+          setCumulativeWizardInput([]);
+          setActiveCard(CARD_IDENTIFIERS.order);
+          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+          hasHandledCommandRef.current = true;
+          setSendingIsActive(false);
+          setTimeout(() => {
+            hasHandledCommandRef.current = false;
+          }, 1000); // Reset after 2 seconds
+          return;
+        }
+
+        // ############## check card specific SUBMISSION "order"
+        const submitCardInputsRevenues =
+          activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
+        if (submitCardInputsRevenues) {
+          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("chunkBuffer:", chunkBufferRef.current);
+          const lastChunk =
+            chunkBufferRef.current[chunkBufferRef.current.length - 1];
+          makeOrderCaching(
+            lastChunk,
+            stepCounterWizard,
+            setStepCounterWizard,
+            cumulativeWizardInput,
+            setCumulativeWizardInput,
+            setSendingIsActive,
+            setInfoFromAPI
+            // setInterimInfoApi
+          );
+          // clear transcript, so that text areas are emptied!
+          setSendingIsActive(false);
+          // clear transcript, so that text areas are emptied!
+          onTranscript("");
+          return; // end processing for this loop
+        }
+
         // ########################### CONDITION: final transcript (pause/sentence ending)
         if (result.isFinal) {
           chunkBufferRef.current.push(transcript);

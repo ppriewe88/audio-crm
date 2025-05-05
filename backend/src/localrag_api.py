@@ -267,7 +267,7 @@ async def pay_invoice(request: Request):
 
 ' ###################### endpoint to get products #################'
 @app.post("/show_products")
-async def get_pairs(request: Request):
+async def show_products(request: Request):
     # receiving request
     form = await request.form()
     # extracting data and reformatting
