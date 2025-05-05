@@ -156,7 +156,7 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
+  max-width: 800px;
   width: 80%;
   z-index: 1001; /* Höher als das Overlay */
   position: relative;
@@ -172,7 +172,7 @@
 }
 .control-caption {
   width: 30%;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 700;
 }
 

@@ -12,6 +12,7 @@ export const ChatbotResponse = ({ llmResponse }) => {
   const [isControlSectionVisible, setIsControlSectionVisible] = useState(false);
   const [isERDiagramVisible, setIsERDiagramVisible] = useState(false);
   const [isSystemPromptVisible, setIsSystemPromptVisible] = useState(false);
+  const [isWorkflowVisible, setIsWorkflowVisible] = useState(false);
   // handlers to manage modal visibility
   const toggleControlSection = () => {
     setIsControlSectionVisible(!isControlSectionVisible);
@@ -21,6 +22,9 @@ export const ChatbotResponse = ({ llmResponse }) => {
   };
   const toggleSystemPrompt = () => {
     setIsSystemPromptVisible(!isSystemPromptVisible);
+  };
+  const toggleWorkflow = () => {
+    setIsWorkflowVisible(!isWorkflowVisible);
   };
   // if (!llmResponse) use empty data
   // else deconstruct Chatbot response (llmResponse);
@@ -59,7 +63,7 @@ export const ChatbotResponse = ({ llmResponse }) => {
         className="control-container"
         style={{ flexDirection: "Row", gap: "10px" }}
       >
-        <button onClick={toggleControlSection} style={{ width: "25%" }}>
+        <button onClick={toggleControlSection} style={{ width: "22%" }}>
           Kontrollbereich
         </button>
         <ControlBoxModal
@@ -67,20 +71,24 @@ export const ChatbotResponse = ({ llmResponse }) => {
           isVisible={isControlSectionVisible}
           onClose={toggleControlSection}
         />
-        <button onClick={toggleERDiagram} style={{ width: "25%" }}>
+        <button onClick={toggleERDiagram} style={{ width: "22%" }}>
           ER Diagramm
         </button>
         <ERDiagramModal
           isVisible={isERDiagramVisible}
           onClose={toggleERDiagram}
         />
-        <button onClick={toggleSystemPrompt} style={{ width: "25%" }}>
+        <button onClick={toggleSystemPrompt} style={{ width: "22%" }}>
           LLM system prompt
         </button>
         <SystemPromptModal
           isVisible={isSystemPromptVisible}
           onClose={toggleSystemPrompt}
         />
+        <button onClick={toggleWorkflow} style={{ width: "22%" }}>
+          Architektur & Workflow
+        </button>
+        <WorkflowModal isVisible={isWorkflowVisible} onClose={toggleWorkflow} />
       </div>
     </div>
   );
@@ -141,7 +149,7 @@ export const ControlBoxModal = ({ controlPart, isVisible, onClose }) => {
         <ControlBox
           controlPart={controlPart}
           caption="user question"
-          height="100px"
+          height="120px"
           controlFragment="user question"
         />
         <ControlBox
@@ -153,7 +161,7 @@ export const ControlBoxModal = ({ controlPart, isVisible, onClose }) => {
         <ControlBox
           controlPart={controlPart}
           caption="SQL query"
-          height="200px"
+          height="240px"
           controlFragment="SQL query"
         />
       </div>
@@ -255,6 +263,40 @@ export const SystemPromptModal = ({ isVisible, onClose }) => {
         >
           {systemPrompt[0]}
         </pre>
+      </div>
+    </div>
+  );
+};
+
+export const WorkflowModal = ({ isVisible, onClose }) => {
+  if (!isVisible) return null; // no rendering when modal not visible
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: "1100px", width: "80%" }}
+      >
+        <h3
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "10px",
+          }}
+        >
+          Architektur & Workflow
+        </h3>
+        <img
+          src="/assets/retriever_workflow.png"
+          alt="ER-Diagramm"
+          style={{
+            maxWidth: "100%",
+            height: "auto",
+            display: "block",
+            margin: "0 auto",
+          }}
+        />
       </div>
     </div>
   );

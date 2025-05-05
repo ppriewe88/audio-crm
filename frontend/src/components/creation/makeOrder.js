@@ -303,6 +303,7 @@ export const MakeOrderProductResults = ({ infoFromAPI, dict }) => {
     "description",
     "Bestand",
     "Mindestbestand",
+    "Lagername",
   ];
   return (
     <>

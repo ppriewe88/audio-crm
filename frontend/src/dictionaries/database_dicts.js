@@ -31,4 +31,13 @@ export const db_dict_de = {
   invoice_id: "Rechnungs-ID",
   status_name: "Status",
   product_name: "Produktname",
+  Verkaufspreis_ohne_MWSt: "VK (ohne MWSt)",
+  Einkaufspreis: "Eink.preis",
+  Verkaufspreis: "Verk.preis",
+  Bestellmenge: "Anz.",
+  Rechnungs_ID: "Rechn.-ID",
+  Produkt_ID: "Prod.-ID",
+  Warengruppe: "Warengr.",
+  Lieferanten_ID: "Lief.-ID",
+  Kunden_ID: "Kund.-ID",
 };

@@ -64,14 +64,14 @@ export const RevenuesResults = ({ infoFromAPI, dict }) => {
   const revenueHeaders = [
     "Rechnungs_ID",
     "Umsatz",
-    "Warengruppe",
-    "Kunden_ID",
-    "Bestellmenge",
-    "Produkt_ID",
-    "Einkaufspreis",
+    "Rohgewinn",
     "Verkaufspreis",
     "Verkaufspreis_ohne_MWSt",
-    "Rohgewinn",
+    "Einkaufspreis",
+    "Produkt_ID",
+    "Bestellmenge",
+    "Kunden_ID",
+    "Warengruppe",
     "Lieferanten_ID",
   ];
 

@@ -39,7 +39,7 @@ pay_invoice = """
 EXEC spChangeInvoiceStatusAndCheckDiscount @invoiceID = ?, @newStatusID = 2"""
 
 show_products = """
-SELECT p.id AS Produkt_ID, p.name AS Produktname, p.sale_price AS Preis, p.description AS description, i.stock AS Bestand, i.min_stock as Mindestbestand
+SELECT p.id AS Produkt_ID, p.name AS Produktname, p.sale_price AS Preis, p.description AS description, i.stock AS Bestand, i.min_stock as Mindestbestand, invsl.name as Lagername
 FROM products p
 JOIN inventory i ON i.product_id=p.id
 JOIN inventory_storagelocations invsl ON invsl.id = i.storage_location_id """

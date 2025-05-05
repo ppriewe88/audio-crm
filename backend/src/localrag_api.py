@@ -105,7 +105,6 @@ async def get_context_and_send_request(question: str = Form(...)):
 
     ' ############### sending request to cloud-model / local model / openAI-API #####'
     # send request to Cloud-LLM (e.g. Azure OpenAI)
-    
     # set default for successfull llm call and check, which usage is specified. Then do llm call
     llm_call_successfull = True
     if usage == "local":
