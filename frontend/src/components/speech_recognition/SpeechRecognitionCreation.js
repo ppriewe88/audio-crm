@@ -200,18 +200,21 @@ export const SpeechRecognitionButtonCreation = ({
 
         // ########################### CONDITION: card SELECTION "revenue"
         if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
-          console.log("BESTELLUNG ANLEGEN");
-          onTranscript("");
-          setInfoFromAPI("");
-          setStepCounterWizard(1);
-          setCumulativeWizardInput([]);
+          console.log("UMSAETZE ANZEIGEN");
+          if (hasTriggeredSubmitRef.current === false) {
+            onTranscript("");
+            setInfoFromAPI("");
+            setStepCounterWizard(1);
+            setCumulativeWizardInput([]);
+            revenuesCaching(
+              setInfoFromAPI,
+              cumulativeWizardInput,
+              stepCounterWizard,
+              setStepCounterWizard
+            );
+          }
           setActiveCard(CARD_IDENTIFIERS.revenue);
-          revenuesCaching(
-            setInfoFromAPI,
-            cumulativeWizardInput,
-            stepCounterWizard,
-            setStepCounterWizard
-          );
+          hasTriggeredSubmitRef.current = true;
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);

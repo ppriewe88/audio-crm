@@ -6,14 +6,10 @@ export const revenuesCaching = (
   setStepCounterWizard
 ) => {
   if (stepCounterWizard === 1) {
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard(1);
+    requestRevenues(setInfoFromAPI, cumulativeWizardInput);
     return;
   }
-  if (stepCounterWizard === 1.5) {
-    requestRevenues(setInfoFromAPI, cumulativeWizardInput);
-    setStepCounterWizard((s) => s + 0.5);
-  }
-  return;
 };
 
 // #################### function to make API call ####

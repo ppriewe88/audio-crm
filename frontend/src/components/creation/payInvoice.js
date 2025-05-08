@@ -36,7 +36,7 @@ export const payInvoiceCaching = async (
   if (stepCounterWizard === 2) {
     // ####################################### pay invoice
     //   append lastChunk (speech input) to array of inputs
-    setCumulativeWizardInput((current) => [lastChunk]);
+    setCumulativeWizardInput((current) => [...current, lastChunk]);
     // no rerender yet, so append content temporarily
     const tempCumulativeWizardInput = [...cumulativeWizardInput, lastChunk];
     console.log("ORIGINAL", cumulativeWizardInput);
