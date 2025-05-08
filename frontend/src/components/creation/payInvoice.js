@@ -12,58 +12,55 @@ export const payInvoiceCaching = async (
   // control log
   console.log("entered paying invoice with current step ", stepCounterWizard);
   if (stepCounterWizard === 1) {
+    // ############################################# show incoives of customer
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [lastChunk]);
+    // no rerender yet, so append content temporarily
+    const tempCumulativeWizardInput = [...cumulativeWizardInput, lastChunk];
+    console.log("ORIGINAL", cumulativeWizardInput);
+    console.log("TEMPORÄR", tempCumulativeWizardInput);
+    // now get invoices of customer
+    await processInvoicePaymentStepwise(
+      tempCumulativeWizardInput,
+      setInfoFromAPI,
+      setInterimInfoApi,
+      1
+    );
     // increase step counter during makeOrder Wizard (hacky solution)
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
-  }
-  if (stepCounterWizard === 1.5) {
-    // step 1.5: get order-invoice pairs (with unpaid invoices) from user
-    await processInvoicePaymentStepwise(
-      cumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      stepCounterWizard
-    );
-    setStepCounterWizard((s) => s + 0.5);
   }
   if (stepCounterWizard === 2) {
+    // ####################################### pay invoice
     //   append lastChunk (speech input) to array of inputs
-    setCumulativeWizardInput((current) => [...current, lastChunk]);
-    console.log(cumulativeWizardInput);
+    setCumulativeWizardInput((current) => [lastChunk]);
+    // no rerender yet, so append content temporarily
+    const tempCumulativeWizardInput = [...cumulativeWizardInput, lastChunk];
+    console.log("ORIGINAL", cumulativeWizardInput);
+    console.log("TEMPORÄR", tempCumulativeWizardInput);
+    // now pay chosen invoice
+    processInvoicePaymentStepwise(
+      tempCumulativeWizardInput,
+      setInfoFromAPI,
+      setInterimInfoApi,
+      2
+    );
+    // now update table again
+    processInvoicePaymentStepwise(
+      tempCumulativeWizardInput,
+      setInfoFromAPI,
+      setInterimInfoApi,
+      1
+    );
     // increase step counter during makeOrder Wizard
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
-    console.log("wizard step now: ", stepCounterWizard);
-    console.log("cumulative wizard input now: ", cumulativeWizardInput);
-    return;
-  }
-  if (stepCounterWizard === 2.5) {
-    // step 2.5: pay chosen invoice
-    processInvoicePaymentStepwise(
-      cumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      stepCounterWizard
-    );
-    // step 1.5: update table
-    processInvoicePaymentStepwise(
-      cumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      1.5
-    );
     setTimeout(() => {
       setStepCounterWizard(2);
-    }, 300);
-  }
-  if (stepCounterWizard === 3) {
-    console.log("last step reached. CHECK COUNTING!!");
-    return;
+    }, 1000);
   }
 };
 
@@ -79,10 +76,10 @@ export const processInvoicePaymentStepwise = async (
   console.log("Now processing: ", cumulativeWizardInput);
   // depenging on step, choose different endpoints
   let endpoint = "";
-  if (stepCounterWizard === 1.5) {
+  if (stepCounterWizard === 1) {
     endpoint = "http://localhost:8000/get_pairs_for_customer";
     console.log("now at step: ", stepCounterWizard);
-  } else if ([2.5, 3].includes(stepCounterWizard)) {
+  } else if ([2].includes(stepCounterWizard)) {
     endpoint = "http://localhost:8000/pay_invoice";
     console.log("now at step: ", stepCounterWizard);
   }
@@ -103,9 +100,9 @@ export const processInvoicePaymentStepwise = async (
     }
 
     const result = await response.json();
-    if (stepCounterWizard === 1.5) {
+    if (stepCounterWizard === 1) {
       setInterimInfoApi(result);
-    } else if (stepCounterWizard === 2.5) {
+    } else if (stepCounterWizard === 2) {
       setInfoFromAPI(result);
     }
 
@@ -136,9 +133,9 @@ export const PayInvoiceWizard = ({
       >
         {[1].includes(stepCounterWizard) &&
           `${inputSteps[0]} einsprechen - dann "Los"!`}
-        {[1.5, 2].includes(stepCounterWizard) &&
+        {[2].includes(stepCounterWizard) &&
           `${inputSteps[1]} einsprechen - dann "Los"!`}
-        {[2.5, 3, 3.5].includes(stepCounterWizard) && "Daten abgesendet!"}
+        {[3, 3.5].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (
@@ -186,7 +183,7 @@ export const PayInvoiceResults = ({
   return (
     <>
       {[1].includes(stepCounterWizard) && "X"}
-      {[1.5, 2].includes(stepCounterWizard) && (
+      {[2].includes(stepCounterWizard) && (
         <>
           <h3>Unbezahlte Aufträge</h3>
           <div className="creation-data-table-wrapper">

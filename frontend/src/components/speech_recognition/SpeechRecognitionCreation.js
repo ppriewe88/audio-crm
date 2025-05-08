@@ -42,6 +42,9 @@ export const SpeechRecognitionButtonCreation = ({
   // ######################### ref blockage flags of speech recognition
   const hasHandledCommandRef = useRef(false);
 
+  // ######################## ref blockage if trigger word has been recognized once
+  const hasTriggeredSubmitRef = useRef(false);
+
   // ######################### main control flow for speech recognition
   // useEffect to initialize speech recognition and handle results
   useEffect(() => {
@@ -70,6 +73,12 @@ export const SpeechRecognitionButtonCreation = ({
           recognitionButton.stop();
           console.log("recognized stopword; record stopped");
           return;
+        }
+
+        // early skip, if trigger word (command) has been recognized once already
+        if (hasTriggeredSubmitRef.current && transcript.includes("los")) {
+          console.log("Trigger was recognized already. Wait for final");
+          continue;
         }
 
         // ########################### CONDITION: card selection "inventory"
@@ -124,6 +133,7 @@ export const SpeechRecognitionButtonCreation = ({
           activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
         if (submitCardInputsMakeOrder) {
           console.log("Befehl erkannt → Trigger onSubmit");
+          hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
             chunkBufferRef.current[chunkBufferRef.current.length - 1];
@@ -167,6 +177,7 @@ export const SpeechRecognitionButtonCreation = ({
           activeCard === CARD_IDENTIFIERS.invoice && transcript.includes("los");
         if (submitCardInputsPayInvoice) {
           console.log("Befehl erkannt → Trigger onSubmit");
+          hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
             chunkBufferRef.current[chunkBufferRef.current.length - 1];
@@ -212,17 +223,10 @@ export const SpeechRecognitionButtonCreation = ({
 
         // ########################### CONDITION: final transcript (pause/sentence ending)
         if (result.isFinal) {
+          hasTriggeredSubmitRef.current = false;
           chunkBufferRef.current.push(transcript);
           console.log("chunkBuffer:", chunkBufferRef.current);
-          if (activeCard === CARD_IDENTIFIERS.order) {
-            setSendingIsActive(true);
-          }
-          if (activeCard === CARD_IDENTIFIERS.inventory) {
-            setSendingIsActive(true);
-          }
-          if (activeCard === CARD_IDENTIFIERS.invoice) {
-            setSendingIsActive(true);
-          }
+          setSendingIsActive(true);
         } else {
           cumulativeTranscript += transcript;
           setSendingIsActive(false);

@@ -11,57 +11,47 @@ export const makeOrderCaching = (
   // control log
   console.log("entered making order with current step ", stepCounterWizard);
   if (stepCounterWizard === 1) {
+    // ################################################################ enter customer ID
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [lastChunk]);
+    // get products for display
+    getProducts(cumulativeWizardInput, setInfoFromAPI);
     // increase step counter during makeOrder Wizard (hacky solution)
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
-  }
-  if (stepCounterWizard === 1.5) {
-    getProducts(cumulativeWizardInput, setInfoFromAPI);
-    setStepCounterWizard((s) => s + 0.5);
   }
   if (stepCounterWizard === 2) {
+    // ################################################################ enter product ID
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [...current, lastChunk]);
     // increase step counter during makeOrder Wizard
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
   }
-  if (stepCounterWizard === 2.5) {
-    setStepCounterWizard((s) => s + 0.5);
-  }
   if (stepCounterWizard === 3) {
+    // ################################################################ enter quantity
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [...current, lastChunk]);
+    // no rerender yet, so append content temporrarily
+    const tempCumulativeWizardInput = [...cumulativeWizardInput, lastChunk];
+    console.log("ORIGINAL", cumulativeWizardInput);
+    console.log("TEMPORÄR", tempCumulativeWizardInput);
+    // now make order (insert into database and get results)
+    makeOrderInserter(tempCumulativeWizardInput, setInfoFromAPI);
     // increase step counter during makeOrder Wizard
-    setStepCounterWizard((s) => s + 0.5);
+    setStepCounterWizard((s) => s + 1);
+    setTimeout(() => {
+      setCumulativeWizardInput([]);
+      setStepCounterWizard(1);
+    }, 30000);
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
-    return;
-  }
-  if (stepCounterWizard === 3.5) {
-    makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
-    console.log("Order was made, resetting wizard counter and emptying inputs");
-    // setTimeout(() => {
-    //   setCumulativeWizardInput([]);
-    //   setStepCounterWizard(1);
-    // }, 30000);
-    return;
-  }
-  if (stepCounterWizard === 4) {
-    console.log("Buffer step (debugging/security measure)");
-    makeOrderInserter(cumulativeWizardInput, setInfoFromAPI);
-    // setTimeout(() => {
-    //   setCumulativeWizardInput([]);
-    //   setStepCounterWizard(1);
-    // }, 30000);
     return;
   }
 };
@@ -144,11 +134,11 @@ export const MakeOrderWizard = ({
       >
         {[1].includes(stepCounterWizard) &&
           `${inputSteps[0]} einsprechen - dann "Los"!`}
-        {[1.5, 2].includes(stepCounterWizard) &&
+        {[2].includes(stepCounterWizard) &&
           `${inputSteps[1]} einsprechen - dann "Los"!`}
-        {[2.5, 3].includes(stepCounterWizard) &&
+        {[3].includes(stepCounterWizard) &&
           `${inputSteps[2]} einsprechen - dann "Los"!`}
-        {[3.5, 4].includes(stepCounterWizard) && "Daten abgesendet!"}
+        {[4].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (
@@ -167,12 +157,12 @@ export const MakeOrderResults = ({ infoFromAPI, dict }) => {
   const orderData = infoFromAPI?.order;
   const invoiceData = infoFromAPI?.invoice;
   const pairData = infoFromAPI?.pair;
-  console.log("DATA:  ", orderData);
+  // console.log("DATA:  ", orderData);
   if (!Array.isArray(orderData) || orderData.length === 0) {
     console.log("inside function:", orderData);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside makeOrderResults function:", orderData);
+  // console.log("inside makeOrderResults function:", orderData);
 
   // creating headers for order table
   const orderHeaders = [
@@ -289,12 +279,12 @@ export const MakeOrderResults = ({ infoFromAPI, dict }) => {
 // #################### display for results #########
 export const MakeOrderProductResults = ({ infoFromAPI, dict }) => {
   const productData = infoFromAPI?.products;
-  console.log("DATA:  ", productData);
+  // console.log("DATA:  ", productData);
   if (!Array.isArray(productData) || productData.length === 0) {
     console.log("inside function:", productData);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside makeOrderResults PRODUCTS function:", productData);
+  // console.log("inside makeOrderResults PRODUCTS function:", productData);
   // creating headers for order table
   const productHeaders = [
     "Produkt_ID",
