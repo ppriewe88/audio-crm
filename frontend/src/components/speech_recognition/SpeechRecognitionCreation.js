@@ -62,8 +62,28 @@ export const SpeechRecognitionButtonCreation = ({
     }, 1000); // Reset after 2 seconds
   };
 
+  // #################### objects to determine trigger word actions
+  const triggerConfigs = [
+    {
+      card: CARD_IDENTIFIERS.inventory,
+      handler: getStorageLocationsGetter,
+    },
+    {
+      card: CARD_IDENTIFIERS.order,
+      handler: makeOrderCaching,
+    },
+    {
+      card: CARD_IDENTIFIERS.invoice,
+      handler: payInvoiceCaching,
+    },
+  ];
+
   // #################### function to handle trigger word in context of active card
-  const handleTriggerWord = (cardIdentifier, transcript, innerFunction) => {
+  const checkAndHandleTriggerWord = (
+    cardIdentifier,
+    transcript,
+    innerFunction
+  ) => {
     const submittedTrigger =
       activeCard === cardIdentifier && transcript.includes("los");
     if (submittedTrigger) {
@@ -142,29 +162,15 @@ export const SpeechRecognitionButtonCreation = ({
           }
         }
 
-        // ############## check card specific submission "inventory"
-        const inventoryTriggers = handleTriggerWord(
-          CARD_IDENTIFIERS.inventory,
-          transcript,
-          getStorageLocationsGetter
-        );
-        if (inventoryTriggers) return;
-
-        // ############## check card specific SUBMISSION "order"
-        const orderTriggers = handleTriggerWord(
-          CARD_IDENTIFIERS.order,
-          transcript,
-          makeOrderCaching
-        );
-        if (orderTriggers) return;
-
-        // ############## check card specific SUBMISSION "invoice"
-        const invoiceTriggers = handleTriggerWord(
-          CARD_IDENTIFIERS.invoice,
-          transcript,
-          payInvoiceCaching
-        );
-        if (invoiceTriggers) return;
+        // ############## CONDITION: check card specific submissions
+        for (const { card, handler } of triggerConfigs) {
+          const triggered = checkAndHandleTriggerWord(
+            card,
+            transcript,
+            handler
+          );
+          if (triggered) return;
+        }
 
         // ########################### CONDITION: card SELECTION "revenue"
         if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
@@ -173,6 +179,7 @@ export const SpeechRecognitionButtonCreation = ({
           if (revenuesActive.current === false) {
             onTranscript("");
             setInfoFromAPI("");
+            setStepCounterWizard(1);
             setCumulativeWizardInput([]);
             revenuesCaching(
               setInfoFromAPI,
