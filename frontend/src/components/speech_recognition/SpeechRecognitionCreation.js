@@ -46,6 +46,17 @@ export const SpeechRecognitionButtonCreation = ({
   const hasTriggeredSubmitRef = useRef(false);
   const revenuesActive = useRef(false);
 
+  // ######################## function to handle card switch in useEffect
+  const handleCardSwitch = (cardIdentifier) => {
+    console.log("Switching card! ", cardIdentifier);
+    onTranscript("");
+    setInfoFromAPI("");
+    setStepCounterWizard(1);
+    setCumulativeWizardInput([]);
+    revenuesActive.current = false;
+    setActiveCard(cardIdentifier);
+  };
+
   // ######################### main control flow for speech recognition
   // useEffect to initialize speech recognition and handle results
   useEffect(() => {
@@ -65,10 +76,6 @@ export const SpeechRecognitionButtonCreation = ({
         const result = event.results[i];
         const transcript = result[0].transcript.toLowerCase().trim();
 
-        // ################## control print
-        // console.log("transcript in speech component:", transcript);
-        // console.log("cumulativeTranscript:", cumulativeTranscript);
-
         // ################## CONDITION: stop word
         if (transcript.includes(stopWord)) {
           recognitionButton.stop();
@@ -85,13 +92,7 @@ export const SpeechRecognitionButtonCreation = ({
         // ########################### CONDITION: card selection "inventory"
         // ############## check card status. If switching on this card, reset the buffer
         if (transcript.includes(CARD_IDENTIFIERS.inventory)) {
-          console.log("LAGERORT CHECKEN");
-          onTranscript("");
-          setInfoFromAPI("");
-          setStepCounterWizard(1);
-          setCumulativeWizardInput([]);
-          revenuesActive.current = false;
-          setActiveCard(CARD_IDENTIFIERS.inventory);
+          handleCardSwitch(CARD_IDENTIFIERS.inventory);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);
@@ -115,13 +116,7 @@ export const SpeechRecognitionButtonCreation = ({
 
         // ########################### CONDITION: card SELECTION "order"
         if (transcript.includes(CARD_IDENTIFIERS.order)) {
-          console.log("BESTELLUNG ANLEGEN");
-          onTranscript("");
-          setInfoFromAPI("");
-          setStepCounterWizard(1);
-          setCumulativeWizardInput([]);
-          revenuesActive.current = false;
-          setActiveCard(CARD_IDENTIFIERS.order);
+          handleCardSwitch(CARD_IDENTIFIERS.order);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);
@@ -160,14 +155,8 @@ export const SpeechRecognitionButtonCreation = ({
 
         // ########################### CONDITION: card selection "invoice"
         if (transcript.includes(CARD_IDENTIFIERS.invoice)) {
-          console.log("RECHNUNG ZAHLEN");
-          onTranscript("");
-          setInfoFromAPI("");
+          handleCardSwitch(CARD_IDENTIFIERS.invoice);
           setInterimInfoApi("");
-          setStepCounterWizard(1);
-          setCumulativeWizardInput([]);
-          revenuesActive.current = false;
-          setActiveCard(CARD_IDENTIFIERS.invoice);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);
