@@ -3,7 +3,7 @@ import { CARD_IDENTIFIERS } from "../creation/CreationCards";
 import { getStorageLocationsGetter } from "../creation/getStorageLocations";
 import { makeOrderCaching } from "../creation/makeOrder";
 import { payInvoiceCaching } from "../creation/payInvoice";
-import { requestRevenues, revenuesCaching } from "../creation/revenues";
+import { revenuesCaching } from "../creation/revenues";
 
 // Check if browser supports SpeechRecognition
 const SpeechRecognition =
@@ -17,7 +17,6 @@ export const SpeechRecognitionButtonCreation = ({
   activeCard,
   setActiveCard,
   setInfoFromAPI,
-  setInterimInfoApi,
   stepCounterWizard,
   setStepCounterWizard,
   cumulativeWizardInput,
@@ -55,6 +54,12 @@ export const SpeechRecognitionButtonCreation = ({
     setCumulativeWizardInput([]);
     revenuesActive.current = false;
     setActiveCard(cardIdentifier);
+    // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+    hasHandledCommandRef.current = true;
+    setSendingIsActive(false);
+    setTimeout(() => {
+      hasHandledCommandRef.current = false;
+    }, 1000); // Reset after 2 seconds
   };
 
   // ######################### main control flow for speech recognition
@@ -93,12 +98,6 @@ export const SpeechRecognitionButtonCreation = ({
         // ############## check card status. If switching on this card, reset the buffer
         if (transcript.includes(CARD_IDENTIFIERS.inventory)) {
           handleCardSwitch(CARD_IDENTIFIERS.inventory);
-          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-          hasHandledCommandRef.current = true;
-          setSendingIsActive(false);
-          setTimeout(() => {
-            hasHandledCommandRef.current = false;
-          }, 1000); // Reset after 2 seconds
           return;
         }
         // ############## check card specific submission "inventory"
@@ -106,23 +105,22 @@ export const SpeechRecognitionButtonCreation = ({
           activeCard === CARD_IDENTIFIERS.inventory &&
           transcript.includes("los");
         if (submitCardInputsStorageLocations) {
-          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("trigger recognized: ", hasTriggeredSubmitRef);
+          hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
             chunkBufferRef.current[chunkBufferRef.current.length - 1];
           getStorageLocationsGetter(lastChunk, setInfoFromAPI);
+          // reset display of instruction field!
+          setSendingIsActive(false);
+          // clear transcript, so that text areas are emptied!
+          onTranscript("");
           return; // end processing for this loop
         }
 
         // ########################### CONDITION: card SELECTION "order"
         if (transcript.includes(CARD_IDENTIFIERS.order)) {
           handleCardSwitch(CARD_IDENTIFIERS.order);
-          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-          hasHandledCommandRef.current = true;
-          setSendingIsActive(false);
-          setTimeout(() => {
-            hasHandledCommandRef.current = false;
-          }, 1000); // Reset after 2 seconds
           return;
         }
 
@@ -130,8 +128,7 @@ export const SpeechRecognitionButtonCreation = ({
         const submitCardInputsMakeOrder =
           activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
         if (submitCardInputsMakeOrder) {
-          console.log("Befehl erkannt → Trigger onSubmit");
-          console.log("KARTE ORDER + LOS: trigger ", hasTriggeredSubmitRef);
+          console.log("trigger recognized: ", hasTriggeredSubmitRef);
           hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
@@ -144,7 +141,6 @@ export const SpeechRecognitionButtonCreation = ({
             setCumulativeWizardInput,
             setSendingIsActive,
             setInfoFromAPI
-            // setInterimInfoApi
           );
           // reset display of instruction field!
           setSendingIsActive(false);
@@ -156,13 +152,6 @@ export const SpeechRecognitionButtonCreation = ({
         // ########################### CONDITION: card selection "invoice"
         if (transcript.includes(CARD_IDENTIFIERS.invoice)) {
           handleCardSwitch(CARD_IDENTIFIERS.invoice);
-          setInterimInfoApi("");
-          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-          hasHandledCommandRef.current = true;
-          setSendingIsActive(false);
-          setTimeout(() => {
-            hasHandledCommandRef.current = false;
-          }, 1000); // Reset after 2 seconds
           return;
         }
 
@@ -170,7 +159,7 @@ export const SpeechRecognitionButtonCreation = ({
         const submitCardInputsPayInvoice =
           activeCard === CARD_IDENTIFIERS.invoice && transcript.includes("los");
         if (submitCardInputsPayInvoice) {
-          console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("trigger recognized: ", hasTriggeredSubmitRef);
           hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
@@ -182,8 +171,7 @@ export const SpeechRecognitionButtonCreation = ({
             cumulativeWizardInput,
             setCumulativeWizardInput,
             setSendingIsActive,
-            setInfoFromAPI,
-            setInterimInfoApi
+            setInfoFromAPI
           );
           // clear transcript, so that text areas are emptied!
           setSendingIsActive(false);
