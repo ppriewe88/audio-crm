@@ -6,6 +6,7 @@ export const revenuesCaching = (
   setStepCounterWizard
 ) => {
   if (stepCounterWizard === 1) {
+    console.log("NOW GETTING DATA");
     setStepCounterWizard(1);
     requestRevenues(setInfoFromAPI, cumulativeWizardInput);
     return;
@@ -52,10 +53,10 @@ export const RevenuesResults = ({ infoFromAPI, dict }) => {
   const revenueData = infoFromAPI?.revenues;
 
   if (!Array.isArray(revenueData) || revenueData.length === 0) {
-    console.log("inside function:", revenueData);
+    // console.log("inside function:", revenueData);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside storageInfo function:", revenueData);
+  // console.log("inside storageInfo function:", revenueData);
   // creating headers for order table
   const revenueHeaders = [
     "Rechnungs_ID",

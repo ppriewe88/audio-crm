@@ -53,10 +53,10 @@ export const GetStorageLocationsResults = ({ infoFromAPI }) => {
   const data = infoFromAPI?.query_results;
 
   if (!Array.isArray(data) || data.length === 0) {
-    console.log("inside function:", data);
+    // console.log("inside function:", data);
     return <div className="creation-data-table-wrapper"> {"    "} </div>;
   }
-  console.log("inside storageInfo function:", data);
+  // console.log("inside storageInfo function:", data);
 
   return (
     <div className="creation-data-table-wrapper">

@@ -15,7 +15,7 @@ export const CreationPanel = () => {
   const [interimInfoFromAPI, setInterimInfoApi] = useState([]);
 
   const handleTranscript = (transcript) => {
-    console.log("received transcript (handler):", transcript);
+    // console.log("received transcript (handler):", transcript);
     // Only show in textarea if it's not a command
     setDisplayedSpeechInput(transcript);
   };

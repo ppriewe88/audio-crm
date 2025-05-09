@@ -44,6 +44,7 @@ export const SpeechRecognitionButtonCreation = ({
 
   // ######################## ref blockage if trigger word has been recognized once
   const hasTriggeredSubmitRef = useRef(false);
+  const revenuesActive = useRef(false);
 
   // ######################### main control flow for speech recognition
   // useEffect to initialize speech recognition and handle results
@@ -65,8 +66,8 @@ export const SpeechRecognitionButtonCreation = ({
         const transcript = result[0].transcript.toLowerCase().trim();
 
         // ################## control print
-        console.log("transcript in speech component:", transcript);
-        console.log("cumulativeTranscript:", cumulativeTranscript);
+        // console.log("transcript in speech component:", transcript);
+        // console.log("cumulativeTranscript:", cumulativeTranscript);
 
         // ################## CONDITION: stop word
         if (transcript.includes(stopWord)) {
@@ -89,6 +90,7 @@ export const SpeechRecognitionButtonCreation = ({
           setInfoFromAPI("");
           setStepCounterWizard(1);
           setCumulativeWizardInput([]);
+          revenuesActive.current = false;
           setActiveCard(CARD_IDENTIFIERS.inventory);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
@@ -118,6 +120,7 @@ export const SpeechRecognitionButtonCreation = ({
           setInfoFromAPI("");
           setStepCounterWizard(1);
           setCumulativeWizardInput([]);
+          revenuesActive.current = false;
           setActiveCard(CARD_IDENTIFIERS.order);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
@@ -133,6 +136,7 @@ export const SpeechRecognitionButtonCreation = ({
           activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
         if (submitCardInputsMakeOrder) {
           console.log("Befehl erkannt → Trigger onSubmit");
+          console.log("KARTE ORDER + LOS: trigger ", hasTriggeredSubmitRef);
           hasTriggeredSubmitRef.current = true; // "los" has been triggered
           console.log("chunkBuffer:", chunkBufferRef.current);
           const lastChunk =
@@ -147,7 +151,7 @@ export const SpeechRecognitionButtonCreation = ({
             setInfoFromAPI
             // setInterimInfoApi
           );
-          // clear transcript, so that text areas are emptied!
+          // reset display of instruction field!
           setSendingIsActive(false);
           // clear transcript, so that text areas are emptied!
           onTranscript("");
@@ -156,12 +160,13 @@ export const SpeechRecognitionButtonCreation = ({
 
         // ########################### CONDITION: card selection "invoice"
         if (transcript.includes(CARD_IDENTIFIERS.invoice)) {
-          console.log("RECHTS");
+          console.log("RECHNUNG ZAHLEN");
           onTranscript("");
           setInfoFromAPI("");
           setInterimInfoApi("");
           setStepCounterWizard(1);
           setCumulativeWizardInput([]);
+          revenuesActive.current = false;
           setActiveCard(CARD_IDENTIFIERS.invoice);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
@@ -201,20 +206,21 @@ export const SpeechRecognitionButtonCreation = ({
         // ########################### CONDITION: card SELECTION "revenue"
         if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
           console.log("UMSAETZE ANZEIGEN");
-          if (hasTriggeredSubmitRef.current === false) {
+          console.log("YYYYYYYYYYYYYYY: ", revenuesActive);
+          if (revenuesActive.current === false) {
             onTranscript("");
             setInfoFromAPI("");
-            setStepCounterWizard(1);
             setCumulativeWizardInput([]);
             revenuesCaching(
               setInfoFromAPI,
               cumulativeWizardInput,
-              stepCounterWizard,
+              1,
               setStepCounterWizard
             );
           }
           setActiveCard(CARD_IDENTIFIERS.revenue);
-          hasTriggeredSubmitRef.current = true;
+          revenuesActive.current = true;
+          console.log("in UMSÄTZE jetzt AKTIVIEREN: ", revenuesActive);
           // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
           hasHandledCommandRef.current = true;
           setSendingIsActive(false);
@@ -227,8 +233,9 @@ export const SpeechRecognitionButtonCreation = ({
         // ########################### CONDITION: final transcript (pause/sentence ending)
         if (result.isFinal) {
           hasTriggeredSubmitRef.current = false;
+          console.log("ISFINAL -- hastriggeredsubmit: ", hasTriggeredSubmitRef);
           chunkBufferRef.current.push(transcript);
-          console.log("chunkBuffer:", chunkBufferRef.current);
+          console.log("ISFINAL -- chunkbuffer:", chunkBufferRef.current);
           setSendingIsActive(true);
         } else {
           cumulativeTranscript += transcript;
