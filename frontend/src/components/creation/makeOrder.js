@@ -11,6 +11,13 @@ export const makeOrderCaching = (
   // control log
   console.log("entered making order with current step ", stepCounterWizard);
   if (stepCounterWizard === 1) {
+    // ################################################################ initial table
+    console.log("NOW GETTING DATA");
+    showCustomers(cumulativeWizardInput, setInfoFromAPI);
+    setStepCounterWizard((s) => s + 1);
+  }
+
+  if (stepCounterWizard === 2) {
     // ################################################################ enter customer ID
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [lastChunk]);
@@ -23,7 +30,7 @@ export const makeOrderCaching = (
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
   }
-  if (stepCounterWizard === 2) {
+  if (stepCounterWizard === 3) {
     // ################################################################ enter product ID
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [...current, lastChunk]);
@@ -34,7 +41,7 @@ export const makeOrderCaching = (
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
   }
-  if (stepCounterWizard === 3) {
+  if (stepCounterWizard === 4) {
     // ################################################################ enter quantity
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [...current, lastChunk]);
@@ -53,6 +60,32 @@ export const makeOrderCaching = (
     console.log("wizard step now: ", stepCounterWizard);
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
+  }
+};
+
+export const showCustomers = async (cumulativeWizardInput, setInfoFromAPI) => {
+  // control print
+  console.log("Now processing: ", cumulativeWizardInput);
+
+  // ################## API call
+  try {
+    // Create FormData and append userQuestion
+    const formData = new FormData();
+    formData.append("wizard_inputs", JSON.stringify(cumulativeWizardInput));
+
+    const response = await fetch("http://localhost:8000/show_customers", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    setInfoFromAPI(result);
+    console.log("Response from server:", result);
+  } catch (error) {
+    console.error("Error:", error);
   }
 };
 
@@ -132,13 +165,13 @@ export const MakeOrderWizard = ({
           color: sendingButtonActive ? "white" : "black",
         }}
       >
-        {[1].includes(stepCounterWizard) &&
+        {[1, 2].includes(stepCounterWizard) &&
           `${inputSteps[0]} einsprechen - dann "Los"!`}
-        {[2].includes(stepCounterWizard) &&
-          `${inputSteps[1]} einsprechen - dann "Los"!`}
         {[3].includes(stepCounterWizard) &&
+          `${inputSteps[1]} einsprechen - dann "Los"!`}
+        {[4].includes(stepCounterWizard) &&
           `${inputSteps[2]} einsprechen - dann "Los"!`}
-        {[4].includes(stepCounterWizard) && "Daten abgesendet!"}
+        {[5].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (

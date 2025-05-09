@@ -285,6 +285,27 @@ async def show_products(request: Request):
 
     return {"products": query_results}
 
+' ###################### endpoint to get products #################'
+@app.post("/show_customers")
+async def show_customers(request: Request):
+    # receiving request
+    form = await request.form()
+    # extracting data and reformatting
+    wizard_inputs_json = form.get("wizard_inputs")  # get array structure from input object (js-array)
+    inputs_list = json.loads(wizard_inputs_json)  # make python list from it
+    # connect to database and send request
+    print("\nconnecting to database")
+    connection = data_retrieval.establish_database_connection()
+    # create query for getting order-invoice-pairs
+    query = queries.show_customers
+    print("send query (get customers) to database...")
+    query_results = data_retrieval.make_query(query, connection)
+    print("Received query results:", YELLOW + str(query_results) + RESET_COLOR)
+    connection.close()
+    print("Connection to database closed!\n")
+
+    return {"customers": query_results}
+
 ' ###################### endpoint to get revenues #################'
 @app.post("/show_revenues")
 async def show_revenues(request: Request):

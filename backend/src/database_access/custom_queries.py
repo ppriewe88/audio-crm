@@ -47,3 +47,8 @@ JOIN inventory_storagelocations invsl ON invsl.id = i.storage_location_id """
 show_revenues = """
 SELECT *
 FROM vw_4BasisFürUmsatzanalysen"""
+
+show_customers = """
+SELECT * 
+FROM customers
+"""

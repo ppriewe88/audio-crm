@@ -18,13 +18,13 @@ export const CreationResults = ({
       )}
       {activeCard === CARD_IDENTIFIERS.order && (
         <>
-          {[1.5, 2, 2.5, 3].includes(stepCounterWizard) && (
+          {[2, 3].includes(stepCounterWizard) && (
             <MakeOrderProductResults
               infoFromAPI={infoFromAPI}
               dict={db_dict_de}
             />
           )}
-          {[3.5, 4].includes(stepCounterWizard) && (
+          {[4, 5].includes(stepCounterWizard) && (
             <MakeOrderResults infoFromAPI={infoFromAPI} dict={db_dict_de} />
           )}
         </>

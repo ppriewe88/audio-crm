@@ -44,6 +44,7 @@ export const SpeechRecognitionButtonCreation = ({
   // ######################## ref blockage if trigger word has been recognized once
   const hasTriggeredSubmitRef = useRef(false);
   const revenuesActive = useRef(false);
+  const ordersActive = useRef(false);
 
   // ######################## function to handle card switch in useEffect
   const handleCardSwitch = (cardIdentifier) => {
@@ -53,6 +54,7 @@ export const SpeechRecognitionButtonCreation = ({
     setStepCounterWizard(1);
     setCumulativeWizardInput([]);
     revenuesActive.current = false;
+    ordersActive.current = false;
     setActiveCard(cardIdentifier);
     // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
     hasHandledCommandRef.current = true;
@@ -60,6 +62,34 @@ export const SpeechRecognitionButtonCreation = ({
     setTimeout(() => {
       hasHandledCommandRef.current = false;
     }, 1000); // Reset after 2 seconds
+  };
+
+  // ######################## function to handle card switch in useEffect
+  const handleCardSwitchNew = (cardIdentifier) => {
+    console.log("ORDERS ANZEIGEN");
+    console.log("YYYYYYYYYYYYYYY: ", ordersActive);
+    if (ordersActive.current === false) {
+      onTranscript("");
+      setInfoFromAPI("");
+      setStepCounterWizard(1);
+      setCumulativeWizardInput([]);
+      makeOrderCaching(
+        setInfoFromAPI,
+        cumulativeWizardInput,
+        1,
+        setStepCounterWizard
+      );
+    }
+    setActiveCard(CARD_IDENTIFIERS.order);
+    ordersActive.current = true;
+    console.log("in UMSÄTZE jetzt AKTIVIEREN: ", ordersActive);
+    // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+    hasHandledCommandRef.current = true;
+    setSendingIsActive(false);
+    setTimeout(() => {
+      hasHandledCommandRef.current = false;
+    }, 1000); // Reset after 2 seconds
+    return;
   };
 
   // #################### objects to determine trigger word actions
@@ -152,7 +182,7 @@ export const SpeechRecognitionButtonCreation = ({
         // array with relevant card names
         const relevantCardValues = [
           CARD_IDENTIFIERS.inventory,
-          CARD_IDENTIFIERS.order,
+          // CARD_IDENTIFIERS.order,
           CARD_IDENTIFIERS.invoice,
         ];
         // loop over relevant cards to check if active
@@ -161,6 +191,10 @@ export const SpeechRecognitionButtonCreation = ({
             handleCardSwitch(value);
             return;
           }
+        }
+
+        if (transcript.includes(CARD_IDENTIFIERS.order)) {
+          handleCardSwitchNew(CARD_IDENTIFIERS.order);
         }
 
         // ############## CONDITION: check card specific submissions
