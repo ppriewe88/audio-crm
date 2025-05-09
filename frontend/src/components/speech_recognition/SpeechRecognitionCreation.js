@@ -62,6 +62,40 @@ export const SpeechRecognitionButtonCreation = ({
     }, 1000); // Reset after 2 seconds
   };
 
+  // #################### function to handle trigger word in context of active card
+  const handleTriggerWord = (cardIdentifier, transcript, innerFunction) => {
+    const submittedTrigger =
+      activeCard === cardIdentifier && transcript.includes("los");
+    if (submittedTrigger) {
+      console.log("trigger recognized: ", hasTriggeredSubmitRef);
+      hasTriggeredSubmitRef.current = true;
+      console.log("chunkBuffer:", chunkBufferRef.current);
+      const lastChunk =
+        chunkBufferRef.current[chunkBufferRef.current.length - 1];
+      if (cardIdentifier === CARD_IDENTIFIERS.inventory) {
+        innerFunction(lastChunk, setInfoFromAPI);
+      } else {
+        innerFunction(
+          lastChunk,
+          stepCounterWizard,
+          setStepCounterWizard,
+          cumulativeWizardInput,
+          setCumulativeWizardInput,
+          setSendingIsActive,
+          setInfoFromAPI
+        );
+      }
+      // reset display of instruction field!
+      setSendingIsActive(false);
+      // clear transcript, so that text areas are emptied!
+      onTranscript("");
+      // return "true" to indicate that process was handled. else, return false
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   // ######################### main control flow for speech recognition
   // useEffect to initialize speech recognition and handle results
   useEffect(() => {
@@ -94,91 +128,43 @@ export const SpeechRecognitionButtonCreation = ({
           continue;
         }
 
-        // ########################### CONDITION: card selection "inventory"
-        // ############## check card status. If switching on this card, reset the buffer
-        if (transcript.includes(CARD_IDENTIFIERS.inventory)) {
-          handleCardSwitch(CARD_IDENTIFIERS.inventory);
-          return;
-        }
-        // ############## check card specific submission "inventory"
-        const submitCardInputsStorageLocations =
-          activeCard === CARD_IDENTIFIERS.inventory &&
-          transcript.includes("los");
-        if (submitCardInputsStorageLocations) {
-          console.log("trigger recognized: ", hasTriggeredSubmitRef);
-          hasTriggeredSubmitRef.current = true; // "los" has been triggered
-          console.log("chunkBuffer:", chunkBufferRef.current);
-          const lastChunk =
-            chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          getStorageLocationsGetter(lastChunk, setInfoFromAPI);
-          // reset display of instruction field!
-          setSendingIsActive(false);
-          // clear transcript, so that text areas are emptied!
-          onTranscript("");
-          return; // end processing for this loop
+        // ############## CONDITION: check switches to relevant cards
+        // array with relevant card names
+        const relevantCardValues = [
+          CARD_IDENTIFIERS.inventory,
+          CARD_IDENTIFIERS.order,
+          CARD_IDENTIFIERS.invoice,
+        ];
+        for (const value of relevantCardValues) {
+          if (transcript.includes(value)) {
+            handleCardSwitch(value);
+            return;
+          }
         }
 
-        // ########################### CONDITION: card SELECTION "order"
-        if (transcript.includes(CARD_IDENTIFIERS.order)) {
-          handleCardSwitch(CARD_IDENTIFIERS.order);
-          return;
-        }
+        // ############## check card specific submission "inventory"
+        const inventoryTriggers = handleTriggerWord(
+          CARD_IDENTIFIERS.inventory,
+          transcript,
+          getStorageLocationsGetter
+        );
+        if (inventoryTriggers) return;
 
         // ############## check card specific SUBMISSION "order"
-        const submitCardInputsMakeOrder =
-          activeCard === CARD_IDENTIFIERS.order && transcript.includes("los");
-        if (submitCardInputsMakeOrder) {
-          console.log("trigger recognized: ", hasTriggeredSubmitRef);
-          hasTriggeredSubmitRef.current = true; // "los" has been triggered
-          console.log("chunkBuffer:", chunkBufferRef.current);
-          const lastChunk =
-            chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          makeOrderCaching(
-            lastChunk,
-            stepCounterWizard,
-            setStepCounterWizard,
-            cumulativeWizardInput,
-            setCumulativeWizardInput,
-            setSendingIsActive,
-            setInfoFromAPI
-          );
-          // reset display of instruction field!
-          setSendingIsActive(false);
-          // clear transcript, so that text areas are emptied!
-          onTranscript("");
-          return; // end processing for this loop
-        }
-
-        // ########################### CONDITION: card selection "invoice"
-        if (transcript.includes(CARD_IDENTIFIERS.invoice)) {
-          handleCardSwitch(CARD_IDENTIFIERS.invoice);
-          return;
-        }
+        const orderTriggers = handleTriggerWord(
+          CARD_IDENTIFIERS.order,
+          transcript,
+          makeOrderCaching
+        );
+        if (orderTriggers) return;
 
         // ############## check card specific SUBMISSION "invoice"
-        const submitCardInputsPayInvoice =
-          activeCard === CARD_IDENTIFIERS.invoice && transcript.includes("los");
-        if (submitCardInputsPayInvoice) {
-          console.log("trigger recognized: ", hasTriggeredSubmitRef);
-          hasTriggeredSubmitRef.current = true; // "los" has been triggered
-          console.log("chunkBuffer:", chunkBufferRef.current);
-          const lastChunk =
-            chunkBufferRef.current[chunkBufferRef.current.length - 1];
-          payInvoiceCaching(
-            lastChunk,
-            stepCounterWizard,
-            setStepCounterWizard,
-            cumulativeWizardInput,
-            setCumulativeWizardInput,
-            setSendingIsActive,
-            setInfoFromAPI
-          );
-          // clear transcript, so that text areas are emptied!
-          setSendingIsActive(false);
-          // clear transcript, so that text areas are emptied!
-          onTranscript("");
-          return; // end processing for this loop
-        }
+        const invoiceTriggers = handleTriggerWord(
+          CARD_IDENTIFIERS.invoice,
+          transcript,
+          payInvoiceCaching
+        );
+        if (invoiceTriggers) return;
 
         // ########################### CONDITION: card SELECTION "revenue"
         if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
