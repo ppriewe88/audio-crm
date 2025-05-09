@@ -155,6 +155,7 @@ export const SpeechRecognitionButtonCreation = ({
           CARD_IDENTIFIERS.order,
           CARD_IDENTIFIERS.invoice,
         ];
+        // loop over relevant cards to check if active
         for (const value of relevantCardValues) {
           if (transcript.includes(value)) {
             handleCardSwitch(value);
@@ -163,6 +164,7 @@ export const SpeechRecognitionButtonCreation = ({
         }
 
         // ############## CONDITION: check card specific submissions
+        // objects with trigger config in head of component. loop over objects
         for (const { card, handler } of triggerConfigs) {
           const triggered = checkAndHandleTriggerWord(
             card,
