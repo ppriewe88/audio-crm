@@ -6,8 +6,7 @@ export const payInvoiceCaching = async (
   cumulativeWizardInput,
   setCumulativeWizardInput,
   setSendingIsActive,
-  setInfoFromAPI,
-  setInterimInfoApi
+  setInfoFromAPI
 ) => {
   // control log
   console.log("entered paying invoice with current step ", stepCounterWizard);
@@ -23,7 +22,6 @@ export const payInvoiceCaching = async (
     await processInvoicePaymentStepwise(
       tempCumulativeWizardInput,
       setInfoFromAPI,
-      setInterimInfoApi,
       1
     );
     // increase step counter during makeOrder Wizard (hacky solution)
@@ -42,19 +40,9 @@ export const payInvoiceCaching = async (
     console.log("ORIGINAL", cumulativeWizardInput);
     console.log("TEMPORÄR", tempCumulativeWizardInput);
     // now pay chosen invoice
-    processInvoicePaymentStepwise(
-      tempCumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      2
-    );
+    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 2);
     // now update table again
-    processInvoicePaymentStepwise(
-      tempCumulativeWizardInput,
-      setInfoFromAPI,
-      setInterimInfoApi,
-      1
-    );
+    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 1);
     // increase step counter during makeOrder Wizard
     setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
@@ -68,7 +56,6 @@ export const payInvoiceCaching = async (
 export const processInvoicePaymentStepwise = async (
   cumulativeWizardInput,
   setInfoFromAPI,
-  setInterimInfoApi,
   stepCounterWizard
 ) => {
   // control print
@@ -100,11 +87,7 @@ export const processInvoicePaymentStepwise = async (
     }
 
     const result = await response.json();
-    if (stepCounterWizard === 1) {
-      setInterimInfoApi(result);
-    } else if (stepCounterWizard === 2) {
-      setInfoFromAPI(result);
-    }
+    setInfoFromAPI(result);
 
     console.log("Response from server:", result);
   } catch (error) {
@@ -151,13 +134,8 @@ export const PayInvoiceWizard = ({
 };
 
 // #################### display for results #########
-export const PayInvoiceResults = ({
-  infoFromAPI,
-  interimInfoFromAPI,
-  dict,
-  stepCounterWizard,
-}) => {
-  const pairData = interimInfoFromAPI?.pairs;
+export const PayInvoiceResults = ({ infoFromAPI, dict, stepCounterWizard }) => {
+  const pairData = infoFromAPI?.pairs;
 
   // console.log("DATA:  ", orderData);
   if (!Array.isArray(pairData) || pairData.length === 0) {
