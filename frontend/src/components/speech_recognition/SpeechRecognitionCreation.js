@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CARD_IDENTIFIERS } from "../creation/CreationCards";
-import { getStorageLocationsGetter } from "../creation/getStorageLocations";
+import { getInventoryCaching } from "../creation/getStorageLocations";
 import { makeOrderCaching } from "../creation/makeOrder";
 import { payInvoiceCaching } from "../creation/payInvoice";
 import { revenuesCaching } from "../creation/revenues";
@@ -43,60 +43,13 @@ export const SpeechRecognitionButtonCreation = ({
 
   // ######################## ref blockage if trigger word has been recognized once
   const hasTriggeredSubmitRef = useRef(false);
-  const revenuesActive = useRef(false);
-  const ordersActive = useRef(false);
-
-  // ######################## function to handle card switch in useEffect
-  const handleCardSwitch = (cardIdentifier) => {
-    console.log("Switching card! ", cardIdentifier);
-    onTranscript("");
-    setInfoFromAPI("");
-    setStepCounterWizard(1);
-    setCumulativeWizardInput([]);
-    revenuesActive.current = false;
-    ordersActive.current = false;
-    setActiveCard(cardIdentifier);
-    // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-    hasHandledCommandRef.current = true;
-    setSendingIsActive(false);
-    setTimeout(() => {
-      hasHandledCommandRef.current = false;
-    }, 1000); // Reset after 2 seconds
-  };
-
-  // ######################## function to handle card switch in useEffect
-  const handleCardSwitchNew = (cardIdentifier) => {
-    console.log("ORDERS ANZEIGEN");
-    console.log("YYYYYYYYYYYYYYY: ", ordersActive);
-    if (ordersActive.current === false) {
-      onTranscript("");
-      setInfoFromAPI("");
-      setStepCounterWizard(1);
-      setCumulativeWizardInput([]);
-      makeOrderCaching(
-        setInfoFromAPI,
-        cumulativeWizardInput,
-        1,
-        setStepCounterWizard
-      );
-    }
-    setActiveCard(CARD_IDENTIFIERS.order);
-    ordersActive.current = true;
-    console.log("in UMSÄTZE jetzt AKTIVIEREN: ", ordersActive);
-    // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-    hasHandledCommandRef.current = true;
-    setSendingIsActive(false);
-    setTimeout(() => {
-      hasHandledCommandRef.current = false;
-    }, 1000); // Reset after 2 seconds
-    return;
-  };
+  const initialQueryDone = useRef(false);
 
   // #################### objects to determine trigger word actions
   const triggerConfigs = [
     {
       card: CARD_IDENTIFIERS.inventory,
-      handler: getStorageLocationsGetter,
+      handler: getInventoryCaching,
     },
     {
       card: CARD_IDENTIFIERS.order,
@@ -106,7 +59,38 @@ export const SpeechRecognitionButtonCreation = ({
       card: CARD_IDENTIFIERS.invoice,
       handler: payInvoiceCaching,
     },
+    { card: CARD_IDENTIFIERS.revenue, handler: revenuesCaching },
   ];
+
+  // ######################## function to handle card switch in useEffect
+  const handleCardSwitchNew = (cardIdentifier, handler) => {
+    console.log("Switching card! ", cardIdentifier);
+    console.log("initialQueryDone: ", initialQueryDone);
+    setActiveCard(cardIdentifier);
+    if (initialQueryDone.current === false) {
+      onTranscript("");
+      setInfoFromAPI("");
+      setStepCounterWizard(1);
+      setCumulativeWizardInput([]);
+      handler(
+        "",
+        1,
+        setStepCounterWizard,
+        cumulativeWizardInput,
+        setCumulativeWizardInput,
+        setSendingIsActive,
+        setInfoFromAPI
+      );
+    }
+    initialQueryDone.current = !initialQueryDone.current;
+    console.log("initialQueryDone: ", initialQueryDone);
+    // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
+    hasHandledCommandRef.current = true;
+    setTimeout(() => {
+      hasHandledCommandRef.current = false;
+    }, 1000); // Reset after 2 seconds
+    return;
+  };
 
   // #################### function to handle trigger word in context of active card
   const checkAndHandleTriggerWord = (
@@ -122,19 +106,15 @@ export const SpeechRecognitionButtonCreation = ({
       console.log("chunkBuffer:", chunkBufferRef.current);
       const lastChunk =
         chunkBufferRef.current[chunkBufferRef.current.length - 1];
-      if (cardIdentifier === CARD_IDENTIFIERS.inventory) {
-        innerFunction(lastChunk, setInfoFromAPI);
-      } else {
-        innerFunction(
-          lastChunk,
-          stepCounterWizard,
-          setStepCounterWizard,
-          cumulativeWizardInput,
-          setCumulativeWizardInput,
-          setSendingIsActive,
-          setInfoFromAPI
-        );
-      }
+      innerFunction(
+        lastChunk,
+        stepCounterWizard,
+        setStepCounterWizard,
+        cumulativeWizardInput,
+        setCumulativeWizardInput,
+        setSendingIsActive,
+        setInfoFromAPI
+      );
       // reset display of instruction field!
       setSendingIsActive(false);
       // clear transcript, so that text areas are emptied!
@@ -179,22 +159,11 @@ export const SpeechRecognitionButtonCreation = ({
         }
 
         // ############## CONDITION: check switches to relevant cards
-        // array with relevant card names
-        const relevantCardValues = [
-          CARD_IDENTIFIERS.inventory,
-          // CARD_IDENTIFIERS.order,
-          CARD_IDENTIFIERS.invoice,
-        ];
-        // loop over relevant cards to check if active
-        for (const value of relevantCardValues) {
-          if (transcript.includes(value)) {
-            handleCardSwitch(value);
+        for (const { card, handler } of triggerConfigs) {
+          if (transcript.includes(card)) {
+            handleCardSwitchNew(card, handler);
             return;
           }
-        }
-
-        if (transcript.includes(CARD_IDENTIFIERS.order)) {
-          handleCardSwitchNew(CARD_IDENTIFIERS.order);
         }
 
         // ############## CONDITION: check card specific submissions
@@ -206,34 +175,6 @@ export const SpeechRecognitionButtonCreation = ({
             handler
           );
           if (triggered) return;
-        }
-
-        // ########################### CONDITION: card SELECTION "revenue"
-        if (transcript.includes(CARD_IDENTIFIERS.revenue)) {
-          console.log("UMSAETZE ANZEIGEN");
-          console.log("YYYYYYYYYYYYYYY: ", revenuesActive);
-          if (revenuesActive.current === false) {
-            onTranscript("");
-            setInfoFromAPI("");
-            setStepCounterWizard(1);
-            setCumulativeWizardInput([]);
-            revenuesCaching(
-              setInfoFromAPI,
-              cumulativeWizardInput,
-              1,
-              setStepCounterWizard
-            );
-          }
-          setActiveCard(CARD_IDENTIFIERS.revenue);
-          revenuesActive.current = true;
-          console.log("in UMSÄTZE jetzt AKTIVIEREN: ", revenuesActive);
-          // Block speech recognition for short time to avoid buggy interim display of interimTranscripts
-          hasHandledCommandRef.current = true;
-          setSendingIsActive(false);
-          setTimeout(() => {
-            hasHandledCommandRef.current = false;
-          }, 1000); // Reset after 2 seconds
-          return;
         }
 
         // ########################### CONDITION: final transcript (pause/sentence ending)

@@ -1,7 +1,54 @@
+import { getProducts } from "./makeOrder";
+// #################### helper function #################
+export const getInventoryCaching = (
+  lastChunk,
+  stepCounterWizard,
+  setStepCounterWizard,
+  cumulativeWizardInput,
+  setCumulativeWizardInput,
+  setSendingIsActive,
+  setInfoFromAPI
+) => {
+  // control log
+  console.log(
+    "entered inventory caching with current step ",
+    stepCounterWizard
+  );
+  if (stepCounterWizard === 1) {
+    // ################################################################ initial table with products
+    console.log("NOW GETTING DATA");
+    getProducts(cumulativeWizardInput, setInfoFromAPI);
+    setStepCounterWizard((s) => 2);
+    setSendingIsActive(false);
+    console.log("wizard step now: ", stepCounterWizard);
+    console.log("cumulative wizard input now: ", cumulativeWizardInput);
+    return;
+  }
+
+  if ([2, 3].includes(stepCounterWizard)) {
+    // ################################################################ enter product ID
+    //   append lastChunk (speech input) to array of inputs
+    setCumulativeWizardInput((current) => [lastChunk]);
+    // no rerender yet, so append content temporrarily
+    const tempCumulativeWizardInput = lastChunk;
+    console.log("ORIGINAL", cumulativeWizardInput);
+    console.log("TEMPORÄR", tempCumulativeWizardInput);
+    // get inventories for display
+    getStorageLocationsGetter(tempCumulativeWizardInput, setInfoFromAPI);
+    // increase step counter
+    setStepCounterWizard((s) => 3);
+    setSendingIsActive(false);
+    console.log("wizard step now: ", stepCounterWizard);
+    console.log("cumulative wizard input now: ", cumulativeWizardInput);
+    return;
+  }
+};
+
 // #################### getter function #################
 export const getStorageLocationsGetter = async (lastChunk, setInfoFromAPI) => {
   // control print
   console.log("Now processing:", lastChunk);
+  // const cleanedArticleNr = lastChunk[lastChunk.length - 1];
   const cleanedArticleNr = lastChunk.replace(/\s+/g, "");
   console.log("Cleaned Art.Nr.: ", cleanedArticleNr);
 
@@ -48,7 +95,55 @@ export const GetStorageLocationsWizard = ({
   );
 };
 
-// #################### display for results #########
+// #################### display for product results #########
+export const GetStorageLocationsProductResults = ({ infoFromAPI, dict }) => {
+  const productData = infoFromAPI?.products;
+  // console.log("DATA:  ", productData);
+  if (!Array.isArray(productData) || productData.length === 0) {
+    console.log("inside function:", productData);
+    return <div className="creation-data-table-wrapper"> {"    "} </div>;
+  }
+  // console.log("inside makeOrderResults PRODUCTS function:", productData);
+  // creating headers for order table
+  const productHeaders = [
+    "Produkt_ID",
+    "Produktname",
+    "Preis",
+    "description",
+    "Bestand",
+    "Mindestbestand",
+    "Lagername",
+  ];
+  return (
+    <>
+      <h3>Produkte</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {productHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {productData.map((row, idx) => (
+                <tr key={idx}>
+                  {productHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// #################### display for final results #########
 export const GetStorageLocationsResults = ({ infoFromAPI }) => {
   const data = infoFromAPI?.query_results;
 

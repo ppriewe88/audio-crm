@@ -1,3 +1,4 @@
+import { showCustomers } from "./makeOrder";
 // #################### helper function #################
 export const payInvoiceCaching = async (
   lastChunk,
@@ -11,6 +12,14 @@ export const payInvoiceCaching = async (
   // control log
   console.log("entered paying invoice with current step ", stepCounterWizard);
   if (stepCounterWizard === 1) {
+    // ################################################################ initial table with customers
+    console.log("NOW GETTING DATA");
+    showCustomers(cumulativeWizardInput, setInfoFromAPI);
+    setStepCounterWizard((s) => s + 1);
+    setSendingIsActive(false);
+    return;
+  }
+  if (stepCounterWizard === 2) {
     // ############################################# show incoives of customer
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [lastChunk]);
@@ -22,7 +31,7 @@ export const payInvoiceCaching = async (
     await processInvoicePaymentStepwise(
       tempCumulativeWizardInput,
       setInfoFromAPI,
-      1
+      2
     );
     // increase step counter during makeOrder Wizard (hacky solution)
     setStepCounterWizard((s) => s + 1);
@@ -31,7 +40,7 @@ export const payInvoiceCaching = async (
     console.log("cumulative wizard input now: ", cumulativeWizardInput);
     return;
   }
-  if (stepCounterWizard === 2) {
+  if (stepCounterWizard === 3) {
     // ####################################### pay invoice
     //   append lastChunk (speech input) to array of inputs
     setCumulativeWizardInput((current) => [...current, lastChunk]);
@@ -40,14 +49,14 @@ export const payInvoiceCaching = async (
     console.log("ORIGINAL", cumulativeWizardInput);
     console.log("TEMPORÄR", tempCumulativeWizardInput);
     // now pay chosen invoice
-    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 2);
+    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 3);
     // now update table again
-    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 1);
+    processInvoicePaymentStepwise(tempCumulativeWizardInput, setInfoFromAPI, 2);
     // increase step counter during makeOrder Wizard
     setStepCounterWizard((s) => s + 1);
     setSendingIsActive(false);
     setTimeout(() => {
-      setStepCounterWizard(2);
+      setStepCounterWizard(3);
     }, 1000);
   }
 };
@@ -63,10 +72,10 @@ export const processInvoicePaymentStepwise = async (
   console.log("Now processing: ", cumulativeWizardInput);
   // depenging on step, choose different endpoints
   let endpoint = "";
-  if (stepCounterWizard === 1) {
+  if (stepCounterWizard === 2) {
     endpoint = "http://localhost:8000/get_pairs_for_customer";
     console.log("now at step: ", stepCounterWizard);
-  } else if ([2].includes(stepCounterWizard)) {
+  } else if (stepCounterWizard === 3) {
     endpoint = "http://localhost:8000/pay_invoice";
     console.log("now at step: ", stepCounterWizard);
   }
@@ -114,11 +123,11 @@ export const PayInvoiceWizard = ({
           color: sendingButtonActive ? "white" : "black",
         }}
       >
-        {[1].includes(stepCounterWizard) &&
+        {[1, 2].includes(stepCounterWizard) &&
           `${inputSteps[0]} einsprechen - dann "Los"!`}
-        {[2].includes(stepCounterWizard) &&
+        {[3].includes(stepCounterWizard) &&
           `${inputSteps[1]} einsprechen - dann "Los"!`}
-        {[3, 3.5].includes(stepCounterWizard) && "Daten abgesendet!"}
+        {[4].includes(stepCounterWizard) && "Daten abgesendet!"}
       </p>
       <textarea className="speech-box" value={speechInput} />
       {cumulativeWizardInput.map((item, index) => (
@@ -129,6 +138,46 @@ export const PayInvoiceWizard = ({
           {index === 0 ? "" : " bezahlt"}
         </span>
       ))}
+    </>
+  );
+};
+
+// #################### display for customer results #########
+export const PayInvoiceCustomerResults = ({ infoFromAPI, dict }) => {
+  const customerData = infoFromAPI?.customers;
+  // console.log("DATA:  ", productData);
+  if (!Array.isArray(customerData) || customerData.length === 0) {
+    console.log("inside function:", customerData);
+    return <div className="creation-data-table-wrapper"> {"    "} </div>;
+  }
+  // console.log("inside makeOrderResults PRODUCTS function:", productData);
+  // creating headers for order table
+  const customerHeaders = ["id", "name", "email", "city", "address"];
+  return (
+    <>
+      <h3>Kunden</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {customerHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {customerData.map((row, idx) => (
+                <tr key={idx}>
+                  {customerHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 };
@@ -160,8 +209,7 @@ export const PayInvoiceResults = ({ infoFromAPI, dict, stepCounterWizard }) => {
   ];
   return (
     <>
-      {[1].includes(stepCounterWizard) && "X"}
-      {[2].includes(stepCounterWizard) && (
+      {[3].includes(stepCounterWizard) && (
         <>
           <h3>Unbezahlte Aufträge</h3>
           <div className="creation-data-table-wrapper">

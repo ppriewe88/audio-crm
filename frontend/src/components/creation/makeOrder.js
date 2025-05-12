@@ -11,10 +11,12 @@ export const makeOrderCaching = (
   // control log
   console.log("entered making order with current step ", stepCounterWizard);
   if (stepCounterWizard === 1) {
-    // ################################################################ initial table
+    // ################################################################ initial table with customers
     console.log("NOW GETTING DATA");
     showCustomers(cumulativeWizardInput, setInfoFromAPI);
     setStepCounterWizard((s) => s + 1);
+    setSendingIsActive(false);
+    return;
   }
 
   if (stepCounterWizard === 2) {
@@ -161,8 +163,12 @@ export const MakeOrderWizard = ({
       <p
         className="creation-input"
         style={{
-          backgroundColor: sendingButtonActive ? "green" : "lightgray",
-          color: sendingButtonActive ? "white" : "black",
+          backgroundColor:
+            sendingButtonActive && stepCounterWizard > 1
+              ? "green"
+              : "lightgray",
+          color:
+            sendingButtonActive && stepCounterWizard > 1 ? "white" : "black",
         }}
       >
         {[1, 2].includes(stepCounterWizard) &&
@@ -345,6 +351,46 @@ export const MakeOrderProductResults = ({ infoFromAPI, dict }) => {
               {productData.map((row, idx) => (
                 <tr key={idx}>
                   {productHeaders.map((header) => (
+                    <td key={header}>{row[header]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// #################### display for results #########
+export const MakeOrderCustomerResults = ({ infoFromAPI, dict }) => {
+  const customerData = infoFromAPI?.customers;
+  // console.log("DATA:  ", productData);
+  if (!Array.isArray(customerData) || customerData.length === 0) {
+    console.log("inside function:", customerData);
+    return <div className="creation-data-table-wrapper"> {"    "} </div>;
+  }
+  // console.log("inside makeOrderResults PRODUCTS function:", productData);
+  // creating headers for order table
+  const customerHeaders = ["id", "name", "email", "city", "address"];
+  return (
+    <>
+      <h3>Kunden</h3>
+      <div className="creation-data-table-wrapper">
+        <div className="creation-data-table-scroll">
+          <table className="creation-data-table">
+            <thead>
+              <tr>
+                {customerHeaders.map((header) => (
+                  <th key={header}> {dict[header] || header || "(empty)"}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {customerData.map((row, idx) => (
+                <tr key={idx}>
+                  {customerHeaders.map((header) => (
                     <td key={header}>{row[header]}</td>
                   ))}
                 </tr>

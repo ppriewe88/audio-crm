@@ -1,9 +1,12 @@
 // #################### helper function #################
 export const revenuesCaching = (
-  setInfoFromAPI,
-  cumulativeWizardInput,
+  lastChunk,
   stepCounterWizard,
-  setStepCounterWizard
+  setStepCounterWizard,
+  cumulativeWizardInput,
+  setCumulativeWizardInput,
+  setSendingIsActive,
+  setInfoFromAPI
 ) => {
   if (stepCounterWizard === 1) {
     console.log("NOW GETTING DATA");
