@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { CreationTasks } from "./CreationTasks";
 import { CreationWizard } from "./CreationWizard";
 import { CreationResults } from "./CreationResults";

@@ -1,6 +1,6 @@
 import { CARD_IDENTIFIERS } from "./CreationCards";
 import { MakeOrderWizard } from "./makeOrder";
-import { GetStorageLocationsWizard } from "./getStorageLocations";
+import { GetInventoriesWizard } from "./getStorageLocations";
 import { PayInvoiceWizard } from "./payInvoice";
 
 export const CreationWizard = ({
@@ -21,7 +21,7 @@ export const CreationWizard = ({
         />
       )}
       {activeCard === CARD_IDENTIFIERS.inventory && (
-        <GetStorageLocationsWizard
+        <GetInventoriesWizard
           sendingButtonActive={sendingButtonActive}
           speechInput={speechInput}
         />
