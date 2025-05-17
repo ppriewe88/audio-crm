@@ -18,9 +18,9 @@ else:
     print("SYS.PATH:", sys.path)
     try:
         import torch
-        print("XXXXXX TORCH VERSION:", torch.__version__)
+        print("XX TORCH VERSION:", torch.__version__)
     except Exception as e:
-        print("EEEEEE Fehler beim Import von torch:", e)
+        print("EE Fehler beim Import von torch:", e)
         raise
     '-----------------------'
     import sys
