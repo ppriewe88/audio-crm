@@ -88,7 +88,7 @@ async def get_context_and_send_request(question: str = Form(...)):
     - Return: LLM-response (SQL-clause) AND retrieved data.
 
     """
-    ' ################################## Getting relevant context ###################'
+    ' ################################## Getting relevant context ####################'
     # Get relevant context from vault
     relevant_context_and_tables = localrag.get_relevant_context(question, vault_embeddings_tensor, vault_content, top_k=5)
     relevant_context = relevant_context_and_tables["relevant_context"]  # Extract the relevant context
