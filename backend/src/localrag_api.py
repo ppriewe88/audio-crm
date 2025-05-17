@@ -43,7 +43,7 @@ app = FastAPI()
 # CORS-Middleware. Required for communication with frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # allow requests from frontend
+    allow_origins=["https://jolly-flower-0edc18203.6.azurestaticapps.net/"],  # allow requests from frontend
     allow_credentials=True,
     allow_methods=["*"],  # allow all HTTP-methods
     allow_headers=["*"],  # allow all headers
