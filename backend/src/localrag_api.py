@@ -66,7 +66,7 @@ async def startup_event():
         client = localrag.configure_ollama_client()
     
     # prepare system message and vault content
-    llm_active = False
+    llm_active = True
     if llm_active:
         global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
         system_message =  find_sql_query
