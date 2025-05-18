@@ -71,7 +71,7 @@ const NavigationBar = ({ activeTab, setActiveTab }) => {
         }}
         onClick={() => setActiveTab("creationTasks")}
       >
-        Aufgaben
+        Aufgaben (v1.1)
       </button>
     </nav>
   );
