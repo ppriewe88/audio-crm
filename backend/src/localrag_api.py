@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Form, Request
 import uvicorn
 import json
+import os
 import localrag_functions as localrag
 from system_helpers import find_sql_query, CYAN, YELLOW, NEON_GREEN, RESET_COLOR
 import database_access.data_retrieval as data_retrieval
 import database_access.custom_queries as queries
 import requests
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware # middleware. requirement for frontend-suitable endpoint
 debug_imports = False
 if not debug_imports:
@@ -54,6 +56,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     
+    # load environment variables
+    load_dotenv(dotenv_path="backend/.env")
+
     # configure usage
     global usage 
     usage = "openAI" # "openAI" or "local"
@@ -68,11 +73,13 @@ async def startup_event():
     # prepare system message and vault content
     llm_active = True
     if llm_active:
-        global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection
+        global system_message, vault_content, vault_embeddings, vault_embeddings_tensor, connection, openai_api_key
         system_message =  find_sql_query
         vault_content = localrag.load_vault_content()
         vault_embeddings = localrag.generate_embeddings_for_vault_content(vault_content)
         vault_embeddings_tensor = localrag.generate_vault_embeddings_tensor(vault_embeddings)
+        openai_api_key =  os.getenv("OPENAI_API_KEY")
+        print("OPENAI-KEY:", openai_api_key)
 
 ' ######################## endpoint to make requests for LLM and database #################'
 @app.post("/get_context_and_send_request")
@@ -125,7 +132,7 @@ async def get_context_and_send_request(question: str = Form(...)):
         api_url_openai = "https://api.openai.com/v1/chat/completions"
         # sending request to official API of OpenAI
         # configuring message first
-        openai_api_key =  "sk-XYZ" #"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"  # CAREFUL: DEACTIVATE if not needed or stolen!
+        # openai_api_key =  os.getenv("OPENAI_API_KEY")
 
         headers = {
             "Authorization": f"Bearer {openai_api_key}",
