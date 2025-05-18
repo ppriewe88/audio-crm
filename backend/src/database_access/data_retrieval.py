@@ -36,8 +36,7 @@ def establish_database_connection():
                     UID={username};
                     PWD={password};
                     Encrypt=yes;
-                    Trusted_Connection=yes;
-                    TrustServerCertificate=no;"""
+                    TrustServerCertificate=no;""" #                     TrustServerCertificate=no;
             connection = pyodbc.connect(connection_string)
             print("Connection succesfully established")
         except pyodbc.Error as e:
