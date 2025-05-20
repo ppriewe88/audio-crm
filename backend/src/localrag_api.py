@@ -56,8 +56,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     
-    # load environment variables
-    load_dotenv(dotenv_path="backend/.env")
+    # load environment variables to later get openai-key
+    load_dotenv(dotenv_path="../.env")
 
     # configure usage
     global usage 

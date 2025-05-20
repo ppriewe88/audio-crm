@@ -1,31 +1,22 @@
 import pyodbc
+from dotenv import load_dotenv
+import os
 
 ' ###### establishing connection #################'
 
 def establish_database_connection():
     cloud_usage = True
-    if not cloud_usage:
+    if cloud_usage:
         try:
-            ' ###################### connection parameters ####################'
-            server = r'DESKTOP-5S013HL\SQL2022EXPRESS'
-            database = 'ProjektarbeitPP'
-            driver = '{ODBC Driver 17 for SQL Server}'
-
-            ' ############### open connection ###########################'
-            connection_string = f"""
-                    DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes"""
-            connection = pyodbc.connect(connection_string)
-            print("Connection succesfully established")
-        except pyodbc.Error as e:
-            print("Connection error: ", e)
-        return connection
-    else:
-        try:
+            ' ######### load environment variables, get azure sql-db admin credentials #####'
+            load_dotenv(dotenv_path="../../.env")
+            azure_db_admin =  os.getenv("SQL_DB_ADMIN")
+            azure_db_admin_pwd = os.getenv("SQL_DB_ADMIN_PWD")
             ' ###################### connection parameters ####################'
             server = r'bird-paradise-db-server.database.windows.net'
             database = 'bird_paradise_sqldatabase' # "birds_paradise_SQL_dev" # 'ProjektarbeitPP'
-            username = 'bird-paradise-sqladmin'
-            password = 'bpadmin1951!?'
+            username = azure_db_admin
+            password = azure_db_admin_pwd
             driver = '{ODBC Driver 17 for SQL Server}'
 
             ' ############### open connection ###########################'
@@ -37,6 +28,21 @@ def establish_database_connection():
                     PWD={password};
                     Encrypt=yes;
                     TrustServerCertificate=no;""" #                     TrustServerCertificate=no;
+            connection = pyodbc.connect(connection_string)
+            print("Connection succesfully established")
+        except pyodbc.Error as e:
+            print("Connection error: ", e)
+        return connection
+    else:
+        try:
+            ' ###################### connection parameters ####################'
+            server = r'DESKTOP-5S013HL\SQL2022EXPRESS'
+            database = 'ProjektarbeitPP'
+            driver = '{ODBC Driver 17 for SQL Server}'
+
+            ' ############### open connection ###########################'
+            connection_string = f"""
+                    DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes"""
             connection = pyodbc.connect(connection_string)
             print("Connection succesfully established")
         except pyodbc.Error as e:
@@ -84,25 +90,3 @@ def make_query(input_query, connection, procedure = False, params=None):
     except Exception as e:
         print(f"Error during execution of sql-query:\n{e}")
         return None
-   
-' ####### quick test ################### '   
-# connection = establish_database_connection()
-# query = "SELECT TOP 5 * FROM products LIMIT 1"
-# results = make_query(query, connection)
-# if results:
-#     for result in results:
-#         print(result)
-#     print("\n\n\n", len(results))
-
-
-# ' ################ reading sql query results to pandas ##########'
-# # reuse connection
-# connection = pyodbc.connect(connection_string)
-# sql_data = pd.read_sql(sql = query3, con=connection)
-# print(sql_data.head(3), type(sql_data))
-# print(sql_data.columns)
-# print(sql_data[["total_price", "due_limit"]].head(3))
-
-# ' ############################# close connection ########################'
-# connection.close()
-# print("connection closed")
