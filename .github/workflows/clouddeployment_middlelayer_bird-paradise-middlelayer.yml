@@ -66,5 +66,4 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'bird-paradise-middlelayer'
-          slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_01A8A333059247348D4ADA2B4EF8642D }}
